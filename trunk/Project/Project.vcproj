@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Project"
 	ProjectGUID="{CAD5D471-4235-4870-9DB5-5A64B79ADC3C}"
 	RootNamespace="Project"
@@ -181,7 +181,43 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\classifier.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CXMLParser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\evaluate.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\objects.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\replay.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\train.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\utils.cpp"
 				>
 			</File>
 		</Filter>
@@ -190,6 +226,26 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\classifier.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CXMLParser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\objects.h"
+				>
+			</File>
+			<File
+				RelativePath=".\replay.h"
+				>
+			</File>
+			<File
+				RelativePath=".\utils.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
