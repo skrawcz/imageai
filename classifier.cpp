@@ -103,14 +103,16 @@ bool CClassifier::train(TTrainingFileList& fileList)
     // example code to show you number of samples for each object class
     cout << "Classes:" << endl;
     for (int i = 0; i < (int)fileList.classes.size(); i++) {
-	cout << fileList.classes[i] << " (";
-	int count = 0;
-	for (int j = 0; j < (int)fileList.files.size(); j++) {
-	    if (fileList.files[j].label == fileList.classes[i]) {
-		count += 1;
-	    }
-	}
-	cout << count << " samples)" << endl;
+			
+			cout << fileList.classes[i] << " (";
+			int count = 0;
+
+			for (int j = 0; j < (int)fileList.files.size(); j++) {
+	    	if (fileList.files[j].label == fileList.classes[i]) {
+					count += 1;
+	    	}
+			}
+			cout << count << " samples)" << endl;
     }
     cout << endl;
 
@@ -121,31 +123,31 @@ bool CClassifier::train(TTrainingFileList& fileList)
     cout << "Processing images..." << endl;
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
     for (int i = 0; i < (int)fileList.files.size(); i++) {
-	// show progress
-	if (i % 1000 == 0) {
-	    showProgress(i, fileList.files.size());
-	}
+			// show progress
+			if (i % 1000 == 0) {
+					showProgress(i, fileList.files.size());
+			}
 
-	// skip non-mug and non-other images (milestone only)
-	if ((fileList.files[i].label == "mug") ||
-	    (fileList.files[i].label == "other")) {
-	    
-	    // load the image
-	    image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
-	    if (image == NULL) {
-		cerr << "ERROR: could not load image "
-		     << fileList.files[i].filename.c_str() << endl;
-		continue;
-	    }
+			// skip non-mug and non-other images (milestone only)
+			if ((fileList.files[i].label == "mug") ||
+					(fileList.files[i].label == "other")) {
+					
+				// load the image
+				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
+				if (image == NULL) {
+					cerr << "ERROR: could not load image "
+							 << fileList.files[i].filename.c_str() << endl;
+					continue;
+				}
 
-	    // resize to 64 x 64
-	    cvResize(image, smallImage);
+			  // resize to 64 x 64
+			  cvResize(image, smallImage);
 
-	    // CS221 TO DO: extract features from image here
+			  // CS221 TO DO: extract features from image here
 
-	    // free memory
-	    cvReleaseImage(&image);
-	}
+			  // free memory
+			  cvReleaseImage(&image);
+			}
     }
 
     // free memory
