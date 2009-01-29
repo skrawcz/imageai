@@ -32,7 +32,13 @@ TTrainingFileList getTrainingFiles(const char *root, const char *ext)
     int len = strlen(ext);
 
     struct dirent *rootEntry;
-    directory = string(root);
+
+		if(root == NULL){
+			directory = string("/afs/ir/class/cs221/vision/data/");
+		}else{
+			directory = string(root);
+		}
+
     if (*(directory.rbegin()) != '/') {
 	directory = directory + string("/");
     }

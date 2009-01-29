@@ -56,60 +56,66 @@ void usage() {
 
 int main(int argc, char *argv[])
 {
-    char *configurationFile;
-    bool bVerbose;
-    char **args;
+  char *configurationFile;
+  bool bVerbose;
+  char **args;
     
-    CClassifier classifier;
+  CClassifier classifier;
 
-    // set defaults
-    configurationFile = NULL;   // set using -c <filename>
-    bVerbose = false;           // turn on with -v
+  // set defaults
+  configurationFile = NULL;   // set using -c <filename>
+  bVerbose = false;           // turn on with -v
 
-    // check arguments
-    args = argv + 1;
-    while (argc-- > 2) {
-        if (!strcmp(*args, "-c")) {
-            argc--; args++;
-            if (configurationFile != NULL) {
-                usage();
-                return -1;
-            }
-            configurationFile = *args;
-        } else if (!strcmp(*args, "-h")) {
-	    usage();
-	    return 0;
-	} else if (!strcmp(*args, "-v")) {
-            bVerbose = !bVerbose;
-        } else {
-            cerr << "ERROR: unrecognized option " << *args << endl;
-            return -1;
-        }
-        args++;
-    }
+  // check arguments
+  args = argv + 1;
+	while (argc-- > 2) {
+		if (!strcmp(*args, "-c")) {
+			argc--; args++;
+			if (configurationFile != NULL) {
+				usage();
+				return -1;
+			}
+			configurationFile = *args;
 
-    if (argc != 1) {
-	usage();
-	exit(-1);
-    }
+		} else if (!strcmp(*args, "-h")) {
+			usage();
+			return 0;
 
-    // load the training file list
-    TTrainingFileList fileList;
-    fileList = getTrainingFiles(*args, ".jpg");
+		} else if (!strcmp(*args, "-v")) {
+			bVerbose = !bVerbose;
 
-    // now train the classifier
-    if (!classifier.train(fileList)) {
-	cerr << "ERROR: could not train classifier" << endl;
-	exit(-1);
-    }
+		} else {
+			cerr << "ERROR: unrecognized option " << *args << endl;
+			return -1;
+		}
 
-    // save classifier configuration
-    if (configurationFile != NULL) {
-        if (!classifier.saveState(configurationFile)) {
-            cerr << "ERROR: could not save classifier configuration" << endl;
-            exit(-1);
-        }
-    }
+		args++;
+	}
 
-    return 0;
+  if (argc != 1) {
+
+		*args = NULL;
+		//usage();
+		//exit(-1);
+  }
+
+  // load the training file list
+  TTrainingFileList fileList;
+  fileList = getTrainingFiles(*args, ".jpg");
+
+  // now train the classifier
+  if (!classifier.train(fileList)) {
+		cerr << "ERROR: could not train classifier" << endl;
+		exit(-1);
+  }
+
+  // save classifier configuration
+	if (configurationFile != NULL) {
+		if (!classifier.saveState(configurationFile)) {
+			cerr << "ERROR: could not save classifier configuration" << endl;
+			exit(-1);
+		}
+  }
+
+	return 0;
 }
