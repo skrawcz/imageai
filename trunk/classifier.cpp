@@ -118,10 +118,12 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     // example code for loading and resizing image files--
     // you may find this useful for the milestone    
-    IplImage *image, *smallImage;
+    IplImage *image, *smallImage, *integralo;
 
     cout << "Processing images..." << endl;
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
+		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
+
     for (int i = 0; i < (int)fileList.files.size(); i++) {
 			// show progress
 			if (i % 1000 == 0) {
@@ -140,8 +142,11 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					continue;
 				}
 
+				
+
 			  // resize to 64 x 64
 			  cvResize(image, smallImage);
+				cvIntegral(smallImage, integralo);
 
 			  // CS221 TO DO: extract features from image here
 
@@ -152,6 +157,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     // free memory
     cvReleaseImage(&smallImage);
+		cvReleaseImage(&integralo);
     cout << endl;
 
     // CS221 TO DO: train you classifier here
