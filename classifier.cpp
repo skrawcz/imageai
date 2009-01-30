@@ -19,8 +19,10 @@
 #include "cv.h"
 #include "cxcore.h"
 #include "highgui.h"
+#include "decisionTree.h"
 
 #include "classifier.h"
+
 
 using namespace std;
 
@@ -297,7 +299,6 @@ int CClassifier::applyHaar(const IplImage *im){
 		++it;
 		++i;
 	}
-
 
 	return 0;
 }

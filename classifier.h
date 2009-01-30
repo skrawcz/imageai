@@ -26,6 +26,8 @@
 #include "utils.h"
 #include "objects.h"
 
+class DecisionTree;
+
 /* CClassifier class ---------------------------------------------------------
  */
 class CClassifier {
