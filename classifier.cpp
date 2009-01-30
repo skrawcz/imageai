@@ -150,7 +150,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					continue;
 				}
 
-				
+				//could display image
+				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+				//window - put outside loop
+				//cvShowIMage("WindowName",image); //display on screen
+				//cvWaitKey(0); //wait for key press
+				//cvReleaseImage(&image); //free memory
+				//cvDestroyWindow("WindowName");//destroying view window - put
+				//outside loop
 
 			  // resize to 64 x 64
 			  cvResize(image, smallImage);
@@ -162,7 +169,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				//TODO save features returned from applyHaar
 				applyHaar(integralo);
 
-			  
+
 
 			  // free memory
 			  cvReleaseImage(&image);
