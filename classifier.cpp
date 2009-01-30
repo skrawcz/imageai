@@ -184,6 +184,8 @@ int CClassifier::applyHaar(const IplImage *im){
 	int i = 0;
 
 	// for every haars feature calculate value for image.
+	// the input file just gives us the coordinates of the entire square
+	// we need to compute where the black and white areas are
 	while(it != haars.end()){
 		
 		t = 0.0;t2 = 0.0;
@@ -197,10 +199,14 @@ int CClassifier::applyHaar(const IplImage *im){
 		switch (it->t){
 			case hH:
 
-				// bottom part (x,y + h/2) + (x+w, y+h) - (x+w,y+h/2) - (x,y+h)
+				// bottom part (y + h/2) + (x+w, y+h) - (x+w,y+h/2) - (x,y+h)
+				// + (y+h/2,x)
 				t  = cvGetReal2D(im, it->y + it->h/2,		it->x);
+				// + (y+h,x+w)
 				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+				// - (y+h/2,x+w)
 				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w);
+				// - (y+h,x)
 				t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
 
 
