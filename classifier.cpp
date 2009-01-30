@@ -127,7 +127,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
     IplImage *image, *smallImage, *integralo;
 
     cout << "Processing images..." << endl;
+		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
+		//integral image
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
     for (int i = 0; i < (int)fileList.files.size(); i++) {
@@ -155,10 +157,12 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 				// create integral image
 				cvIntegral(smallImage, integralo);
-
+				
+				//extract features from image here
+				//TODO save features returned from applyHaar
 				applyHaar(integralo);
 
-			  // CS221 TO DO: extract features from image here
+			  
 
 			  // free memory
 			  cvReleaseImage(&image);
