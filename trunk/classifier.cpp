@@ -168,7 +168,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				//extract features from image here
 				//TODO save features returned from applyHaar
 				applyHaar(integralo);
-
+				//save into struct? with image type 
 
 
 			  // free memory
