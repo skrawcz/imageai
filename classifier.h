@@ -54,5 +54,23 @@ public:
 
 private:
     // CS221 TO DO: ADD YOUR MEMBER FUNCTIONS HERE
+
+		enum HaarType{
+			hH, hV, hD, hTL, hTR, hBL, hBR
+		};
+
+
+		struct HaarFeature{
+			int x,y,w,h;
+			HaarType t;
+		};
+
+		std::vector<HaarFeature> haars;
+
+		HaarFeature strToHaar(const std::string &in);
+		void readHaars();
+		int applyHaar(const IplImage *im);
+
+
 };
 

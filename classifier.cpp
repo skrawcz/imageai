@@ -12,6 +12,8 @@
 #include <cassert>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <algorithm>
 
 #include "cv.h"
@@ -116,6 +118,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
     }
     cout << endl;
 
+
+		// create haars
+		readHaars();
+
     // example code for loading and resizing image files--
     // you may find this useful for the milestone    
     IplImage *image, *smallImage, *integralo;
@@ -164,3 +170,129 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     return true;
 }
+
+
+
+
+CClassifier::HaarFeature CClassifier::strToHaar(const std::string &in){
+
+	HaarFeature out;
+
+	std::stringstream s;
+  s << in;
+
+	s >> out.x;
+	s >> out.y;
+	s >> out.w;
+	s >> out.h;
+
+	std::string tmp;
+
+	s >> tmp;
+
+	// define the type
+	if(tmp == "H")
+		out.t = hH;
+	else if(tmp == "V")
+		out.t = hV;
+	else if(tmp == "D")
+		out.t = hD;
+	else if(tmp == "TL")
+		out.t = hTL;
+	else if(tmp == "TR")
+		out.t = hTR;
+	else if(tmp == "BL")
+		out.t = hBL;
+	else if(tmp == "BR")
+		out.t = hBR;
+
+	return out;
+
+}
+
+int CClassifier::applyHaar(const IplImage *im){
+
+	std::vector<HaarFeature>::iterator it = haars.begin();
+
+	double t,t2,z,out;
+	while(it != haars.end()){
+		
+		//t=0.0;b=0.0;l=0.0;r=0.0,z=0.0;
+
+		// total
+		z  = cvGetReal2D(im, it->y,				 		it->x);
+		z += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w);
+		z -= cvGetReal2D(im, it->y,				 		it->x + it->w);
+		z -= cvGetReal2D(im, it->y + it->h,	 	it->x);
+
+		switch (it->t){
+			case hH:
+				// bottom part
+				t  = cvGetReal2D(im, it->y + it->h/2,		it->x);
+				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w);
+				t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
+
+				out = (z-2*t)/z;
+
+			break;
+			case hV:
+				// right part
+				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
+				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+				t -= cvGetReal2D(im, it->y,							it->x + it->w/2);
+				t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+
+				out = (z-2*t)/z;
+
+			break;
+			case hD:
+				// top right part
+				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
+				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
+				t -= cvGetReal2D(im, it->y,							it->x + it->w/2);
+				t -= cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
+
+				// bottom left part
+				t2  = cvGetReal2D(im, it->y + it->h/2,	it->x);
+				t2 += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+				t2 -= cvGetReal2D(im, it->y + it->h/2,	it->x);
+				t2 -= cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+
+				out = (z-2*t - 2*t2)/z;
+
+			break;
+			case hTL:
+
+			break;
+			case hTR:
+
+			break;
+			case hBL:
+
+			break;
+			case hBR:
+			
+			break;
+		}
+		++it;
+	}
+
+
+
+}
+void CClassifier::readHaars(){
+
+
+	haars.clear();
+	std::string tmp;
+	ifstream ifs ( "haarfeatures.txt" , ifstream::in );
+
+	// get all the haars
+  while (getline(ifs,tmp))
+		haars.push_back(strToHaar(tmp));
+	
+
+}
+
+
