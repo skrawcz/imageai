@@ -228,49 +228,49 @@ int CClassifier::applyHaar(const IplImage *im){
 				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
 				t -= cvGetReal2D(im, it->y,	 						it->x + it->w);
 
-				// bottom left part
+				// bottom left part ( y+h, x + w/2) + (y + h/2, x) - (y+h,x) - (y + h/2, x + w/2)
 				t2  = cvGetReal2D(im, it->y + it->h/2,	it->x);
 				t2 += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
-				t2 -= cvGetReal2D(im, it->y + it->h/2,	it->x);
-				t2 -= cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+				t2 -= cvGetReal2D(im, it->y + it->h,		it->x);
+				t2 -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w/2);
 
 				t += t2;
 
 			break;
 			case hTL:
 				
-				// top left part
+				// top left part (x,y) + (y+h/2,x+w/2) - (y+h/2,x) - (y,x+w/2)
 				t  = cvGetReal2D(im, it->y,							it->x);
 				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y,							it->x);
-				t -= cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
+				t -= cvGetReal2D(im, it->y + it->h/2,		it->x);
+				t -= cvGetReal2D(im, it->y,						 	it->x + it->w/2);
 
 			break;
 			case hTR:
 
-				// top right part
+				// top right part (x+w/2,y) + (x+w,y+h/2) - (x + w/2, y + w/2) - (x + w, y)
 				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
 				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
-				t -= cvGetReal2D(im, it->y,							it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
+				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
+				t -= cvGetReal2D(im, it->y,	 						it->x + it->w);
 
 			break;
 			case hBL:
 
-				// bottom left part
-				t   = cvGetReal2D(im, it->y + it->h/2,	it->x);
-				t  += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
-				t  -= cvGetReal2D(im, it->y + it->h/2,	it->x);
-				t  -= cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+				// bottom left part ( y+h, x + w/2) + (y + h/2, x) - (y+h,x) - (y + h/2, x + w/2)
+				t  = cvGetReal2D(im, it->y + it->h/2,	it->x);
+				t += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+				t -= cvGetReal2D(im, it->y + it->h,		it->x);
+				t -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w/2);
 
 			break;
 			case hBR:
 
-				// bottom left part
-				t   = cvGetReal2D(im, it->y + it->h/2,	it->x + it->w);
-				t  += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
-				t  -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w);
-				t  -= cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+				// bottom right part (y+h,x+w) + (y+h/2,x+w/2) - (y+h,x+w/2) - (y+h/2,x+w)
+				t  = cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
+				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+				t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w/2);
+				t -= cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
 			
 			break;
 
