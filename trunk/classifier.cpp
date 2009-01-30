@@ -127,6 +127,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
     // example code for loading and resizing image files--
     // you may find this useful for the milestone    
     IplImage *image, *smallImage, *integralo;
+		HaarOutput *haarOut;
+
+		std::vector<HaarOutput*> haarOutVec;
 
     cout << "Processing images..." << endl;
 		//grey scale image 
@@ -167,11 +170,20 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				// create integral image
 				cvIntegral(smallImage, integralo);
 				
-				//extract features from image here
-				//TODO save features returned from applyHaar
-				applyHaar(integralo);
-				//save into struct? with image type 
+				//create haarOutput object that contains type and haar values of image
+				haarOut = new HaarOutput;
 
+				// save image type
+				if(fileList.files[i].label == "mug")
+					haarOut->type = mug;
+				else
+					haarOut->type = other;
+				
+				// save haar features
+				applyHaar(integralo, haarOut);
+
+				// add to struct of features.
+				haarOutVec.push_back(haarOut);
 
 			  // free memory
 			  cvReleaseImage(&image);
@@ -181,19 +193,35 @@ bool CClassifier::train(TTrainingFileList& fileList)
     // free memory
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
+
     cout << endl;
 
-    // CS221 TO DO: train you classifier here
+		// create a vector of attributes, ie the different haar features.
+		std::vector<bool> attribs;
+
+		for(unsigned i=0;i<HAARAMOUNT;++i)
+			attribs.push_back(false);
+
+		DecisionTree tree(haarOutVec, attribs, -1);
+
+		
+
+		// clear out haar feature data
+		for(unsigned i=0;i<haarOutVec.size();++i)
+			delete haarOutVec[i];
+
+
 
     return true;
 }
 
 // creates set of haar values for an image.
-int CClassifier::applyHaar(const IplImage *im){
+void CClassifier::applyHaar(const IplImage *im, HaarOutput *haary){
 
 	std::vector<HaarFeature>::iterator it = haars.begin();
 
 	double t,t2,z,out;
+
 	int i = 0;
 
 	// for every haars feature calculate value for image.
@@ -293,14 +321,17 @@ int CClassifier::applyHaar(const IplImage *im){
 			
 			break;
 
-			out = (z - 2*t)/z;
+
 
 		}
 		++it;
+		
+		out = (z - 2*t)/z;
+		haary->haarVals[i] = out;
+
 		++i;
 	}
 
-	return 0;
 }
 
 // reads haar presets from file

@@ -26,6 +26,8 @@
 #include "utils.h"
 #include "objects.h"
 
+#define HAARAMOUNT 57
+
 class DecisionTree;
 
 /* CClassifier class ---------------------------------------------------------
@@ -54,24 +56,34 @@ public:
     // train the classifier using given set of files
     virtual bool train(TTrainingFileList&);
 
-private:
-    // CS221 TO DO: ADD YOUR MEMBER FUNCTIONS HERE
-
 		enum HaarType{
 			hH, hV, hD, hTL, hTR, hBL, hBR
 		};
 
+		enum ImageType{
+			mug, scissors, stapler, clock, keyboard, other
+		};
 
 		struct HaarFeature{
 			int x,y,w,h;
 			HaarType t;
 		};
 
+		struct HaarOutput{
+			ImageType type;
+			double haarVals[HAARAMOUNT];
+		};
+
+private:
+    // CS221 TO DO: ADD YOUR MEMBER FUNCTIONS HERE
+
+		
+
 		std::vector<HaarFeature> haars;
 
 		HaarFeature strToHaar(const std::string &in);
 		void readHaars();
-		int applyHaar(const IplImage *im);
+		void applyHaar(const IplImage *im, HaarOutput *haary);
 
 
 };
