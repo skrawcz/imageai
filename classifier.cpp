@@ -196,10 +196,12 @@ int CClassifier::applyHaar(const IplImage *im){
 		z -= cvGetReal2D(im, it->y + it->h,	 	it->x);
 		z += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w);
 
+		//this goes through the haar features and computes
+		// the area computation has been checked by Stefan - written by Filip
 		switch (it->t){
 			case hH:
 
-				// bottom part (y + h/2) + (x+w, y+h) - (x+w,y+h/2) - (x,y+h)
+				// bottom part (y + h/2) + (y+h,x+w) - (y+h/2,x+w) - (y+h,x)
 				// + (y+h/2,x)
 				t  = cvGetReal2D(im, it->y + it->h/2,		it->x);
 				// + (y+h,x+w)
@@ -213,16 +215,20 @@ int CClassifier::applyHaar(const IplImage *im){
 			break;
 			case hV:
 
-				// right part    (x+w/2,y) + (x+w, y+h) - (x+w,y) - (x + w/2,y+h)
+				// right part    (y,x+w/2) + (y+h,x+w) - (y,x+w) - (y+h,x + w/2)
+				// + (y,x+w/2)
 				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
+				// + (y+h,x+w)
 				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+				// - (y,x+w)
 				t -= cvGetReal2D(im, it->y,							it->x + it->w);
+				// - (y+h,x+w/2)
 				t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w/2);
 
 			break;
 			case hD:
 
-				// top right part (x+w/2,y) + (x+w,y+h/2) - (x + w/2, y + w/2) - (x + w, y)
+				// top right part (y,x+w/2) + (y+h/2,x+w) - (y + h/2, x + w/2) - (y,x + w)
 				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
 				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
 				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
@@ -239,7 +245,7 @@ int CClassifier::applyHaar(const IplImage *im){
 			break;
 			case hTL:
 				
-				// top left part (x,y) + (y+h/2,x+w/2) - (y+h/2,x) - (y,x+w/2)
+				// top left part (y,x) + (y+h/2,x+w/2) - (y+h/2,x) - (y,x+w/2)
 				t  = cvGetReal2D(im, it->y,							it->x);
 				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
 				t -= cvGetReal2D(im, it->y + it->h/2,		it->x);
@@ -248,7 +254,7 @@ int CClassifier::applyHaar(const IplImage *im){
 			break;
 			case hTR:
 
-				// top right part (x+w/2,y) + (x+w,y+h/2) - (x + w/2, y + w/2) - (x + w, y)
+				// top right part (y,x+w/2) + (y+h/2,x+w) - (y + h/2, x + w/2) - (y,x + w)
 				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
 				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
 				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
