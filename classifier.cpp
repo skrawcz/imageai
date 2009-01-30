@@ -126,7 +126,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     // example code for loading and resizing image files--
     // you may find this useful for the milestone    
-    IplImage *image, *smallImage, *integralo;
+    IplImage *image, *smallImage, *integralo, *gray;
 		HaarOutput *haarOut;
 
 		std::vector<HaarOutput*> haarOutVec;
@@ -154,13 +154,24 @@ bool CClassifier::train(TTrainingFileList& fileList)
 							 << fileList.files[i].filename.c_str() << endl;
 					continue;
 				}
-
+				//this checks to see if the channel is 1, if not
+				//it converts it to gray scale
+				//otherwise makes gray point to the same image
+				if(image->nChannels != 1){
+					gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
+					cvCvtColor(image,gray,CV_BGR2GRAY);
+					//releasing old image as we don't need it now
+					cvReleaseImage(&image);
+				}else{
+					gray = image;
+				}
+				
 				//could display image
 				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 				//window - put outside loop
 				//cvShowIMage("WindowName",image); //display on screen
 				//cvWaitKey(0); //wait for key press
-				//cvReleaseImage(&image); //free memory
+				//remember to releaseImage...
 				//cvDestroyWindow("WindowName");//destroying view window - put
 				//outside loop
 
@@ -186,7 +197,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				haarOutVec.push_back(haarOut);
 
 			  // free memory
-			  cvReleaseImage(&image);
+			  //cvReleaseImage(&image); potential memory bug maybe?
+				//releasing gray (if the image was grayscale to begin with this
+			  //should point to the same thing and still work
+				cvReleaseImage(&gray);
 			}
     }
 
