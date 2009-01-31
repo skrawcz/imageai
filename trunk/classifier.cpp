@@ -22,7 +22,7 @@
 #include "decisionTree.h"
 
 #include "classifier.h"
-
+#include <math.h>
 
 using namespace std;
 
@@ -341,7 +341,7 @@ void CClassifier::applyHaar(const IplImage *im, HaarOutput *haary){
 		++it;
 		
 		out = (z - 2*t)/z;
-		haary->haarVals[i] = out;
+		haary->haarVals[i] = fabs(out);
 
 		++i;
 	}
