@@ -148,6 +148,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		//integral image
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
+		int c = 0; //my counter to only load a certain amount of images
     for (int i = 0; i < (int)fileList.files.size(); i++) {
 			// show progress
 			if (i % 1000 == 0) {
@@ -156,7 +157,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 			// skip non-mug and non-other images (milestone only)
 			if ((fileList.files[i].label == "mug") || (fileList.files[i].label == "other")) {
-					
+			  c++;//incrementing counter
+				if(c > 400 ){//if the counter is more then break
+					break;
+				}
 				// load the image
 				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
 				if (image == NULL) {
@@ -164,6 +168,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 							 << fileList.files[i].filename.c_str() << endl;
 					continue;
 				}
+				//cout << "loaded image" << endl;
 				//this checks to see if the channel is 1, if not
 				//it converts it to gray scale
 				//otherwise makes gray point to the same image
@@ -229,9 +234,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 		if(tree != NULL)
 			delete tree;
-
+		cout << "making tree"<<endl;
 		tree = new DecisionTree(haarOutVec, attribs, -1, CClassifier::OTHER);
-
+		cout << "finished with tree" << endl;
 		
 		// clear out haar feature data
 		for(unsigned i=0;i<haarOutVec.size();++i)
