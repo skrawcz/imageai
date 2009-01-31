@@ -61,7 +61,7 @@ public:
 		};
 
 		enum ImageType{
-			mug, scissors, stapler, clock, keyboard, other
+			MUG, SCISSORS, STAPLER, CLOCK, KEYBOARD, OTHER
 		};
 
 		struct HaarFeature{

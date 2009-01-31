@@ -14,7 +14,8 @@ class DecisionTree{
 public:
 
 	// just create
-	DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, float majority);
+	DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
+							 float percent, CClassifier::ImageType type);
 
 	// create from xml file
 	DecisionTree(std::ifstream &in);
@@ -25,20 +26,23 @@ public:
 
 	void print(std::ofstream &out);
 
-	int chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs);
+	float chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs);
 
 
 private:
 
 	bool sameClassification(const std::vector<CClassifier::HaarOutput*> &examples);
+	bool isAttribsEmpty(const std::vector<bool> &attribs);
+	void setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples);
 
 
 	std::vector<DecisionTree*> children;
 
 	float majorityPercent;
+	CClassifier::ImageType majorityType;
 	int haarType;
 	bool isLeaf;
-	CClassifier::ImageType majorityType;
+	
 
 
 

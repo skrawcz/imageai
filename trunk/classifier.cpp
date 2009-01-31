@@ -186,9 +186,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 				// save image type
 				if(fileList.files[i].label == "mug")
-					haarOut->type = mug;
+					haarOut->type = MUG;
 				else
-					haarOut->type = other;
+					haarOut->type = OTHER;
 				
 				// save haar features
 				applyHaar(integralo, haarOut);
@@ -214,9 +214,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		std::vector<bool> attribs;
 
 		for(unsigned i=0;i<HAARAMOUNT;++i)
-			attribs.push_back(false);
+			attribs.push_back(true);
 
-		DecisionTree tree(haarOutVec, attribs, -1);
+		DecisionTree tree(haarOutVec, attribs, -1, CClassifier::OTHER);
 
 		
 
