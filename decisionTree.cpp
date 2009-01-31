@@ -4,6 +4,9 @@
 
 #include <algorithm>
 
+
+CClassifier::ImageType DecisionTree::treeType = CClassifier::MUG;
+
 DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
 													 float percent, CClassifier::ImageType type) 
 
@@ -110,46 +113,24 @@ bool DecisionTree::isAttribsEmpty(const std::vector<bool> &attribs){
 
 void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples){
 
-	int mug = 0, scissors = 0, stapler = 0, clock = 0, keyboard = 0, other = 0;
+	int sought = 0, other = 0;
 
 	std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
 	while(it != examples.end()){
 
-		switch((*it)->type){
+		if((*it)->type == treeType)
+			++sought;
+		else
+			++other;
 
-			case CClassifier::OTHER:
-				++other;
-			break;
-
-			case CClassifier::MUG:
-				++mug;
-			break;
-
-			case CClassifier::SCISSORS:
-				++scissors;
-			break;
-
-			case CClassifier::STAPLER:
-				++stapler;
-			break;
-
-			case CClassifier::CLOCK:
-				++clock;
-			break;
-
-			case CClassifier::KEYBOARD:
-				++keyboard;
-			break;
-
-		}
 		++it;
 	}
 
-	int max = std::max(other, std::max(mug, std::max(scissors, std::max(stapler, std::max(clock, keyboard)))));
+	int max = std::max(other, sought);
 	
 	if(max != 0)
-		majorityPercent = float(max) / float(mug + scissors + stapler + clock + keyboard + other);
+		majorityPercent = float(max) / float(sought + other);
 
 	if(max == other)
 		majorityType = CClassifier::OTHER;

@@ -28,6 +28,8 @@ public:
 
 	float chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs);
 
+	static void setTreeType(CClassifier::ImageType t) { treeType = t; }
+
 
 private:
 
@@ -44,7 +46,7 @@ private:
 	bool isLeaf;
 	
 
-
+	static CClassifier::ImageType treeType;
 
 };
 
