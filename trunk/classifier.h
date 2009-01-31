@@ -80,6 +80,7 @@ private:
 		
 
 		std::vector<HaarFeature> haars;
+		DecisionTree *tree;
 
 		HaarFeature strToHaar(const std::string &in);
 		void readHaars();

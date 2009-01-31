@@ -24,7 +24,7 @@ public:
 
 	//DecisionTree* learn(){return NULL;};
 
-	void print(std::ofstream &out);
+	void print(std::ofstream &out, int level);
 
 	float chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs);
 
