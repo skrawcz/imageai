@@ -120,7 +120,7 @@ bool DecisionTree::isAttribsEmpty(const std::vector<bool> &attribs){
 
 void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples){
 
-	int sought = 0, other = 0;
+	int positive = 0, negative = 0;
 
 	std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
@@ -128,20 +128,20 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 	while(it != examples.end()){
 
 		if((*it)->type == treeType)
-			++sought;
+			++positive;
 		else
-			++other;
+			++negative;
 
 		++it;
 	}
 
-	int max = std::max(other, sought);
+	int max = std::max(positive, negative);
 	
 	// find the most common types percentage and save it.
 	if(max != 0)
-		majorityPercent = float(max) / float(sought + other);
+		majorityPercent = float(max) / float(positive + negative);
 
-	if(max == sought)
+	if(max == positive)
 		majorityType = treeType;
 
 	else
