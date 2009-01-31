@@ -61,16 +61,23 @@ DecisionTree::~DecisionTree(){
 
 
 }
-void DecisionTree::print(std::ofstream &out){
+void DecisionTree::print(std::ofstream &out, int level){
+
+	std::string tabStr;
+
+	for(int i=0;i<=level;++i)
+		tabStr.append("\t");
+
+	out << tabStr << "<node>\n";
+	out << tabStr << "\t<isLeaf>" << isLeaf << "</isLeaf>";
 
 
-	// print data.
 
 
 	for(unsigned i=0;i<children.size();++i)
-			children[i]->print(out);
+			children[i]->print(out, level + 1);
 
-
+	out << tabStr << "</node>\n";
 
 }
 

@@ -34,6 +34,8 @@ CClassifier::CClassifier()
     // initalize the random number generator (for sample code)
     rng = cvRNG(-1);
     parameters = NULL;
+		tree = NULL;
+		
 
     // CS221 TO DO: add initialization for any member variables   
 }
@@ -42,10 +44,11 @@ CClassifier::CClassifier()
 CClassifier::~CClassifier()
 {
     if (parameters != NULL) {
-	cvReleaseMat(&parameters);
+			cvReleaseMat(&parameters);
     }
 
-    // CS221 TO DO: free any memory allocated by the object
+    if(tree != NULL)
+			delete tree;
 }
 
 // loadState
@@ -65,8 +68,16 @@ bool CClassifier::saveState(const char *filename)
 {
     assert(filename != NULL);
     
-    // CS221 TO DO: replace this with your own configuration code
-    
+    if(tree == NULL)	
+			return false;
+
+		
+		ofstream ofs ( filename );
+
+
+		tree->print(ofs, 0);
+
+    ofs.close();
     return true;
 }
 
@@ -144,8 +155,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			}
 
 			// skip non-mug and non-other images (milestone only)
-			if ((fileList.files[i].label == "mug") ||
-					(fileList.files[i].label == "other")) {
+			if ((fileList.files[i].label == "mug")){// || (fileList.files[i].label == "other")) {
 					
 				// load the image
 				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
@@ -216,7 +226,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		for(unsigned i=0;i<HAARAMOUNT;++i)
 			attribs.push_back(true);
 
-		DecisionTree tree(haarOutVec, attribs, -1, CClassifier::OTHER);
+		std::cout << tree << std::endl;
+
+		if(tree != NULL)
+			delete tree;
+
+		std::cout << "kebab1" << std::endl;
+
+		tree = new DecisionTree(haarOutVec, attribs, -1, CClassifier::OTHER);
 
 		
 
@@ -225,7 +242,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			delete haarOutVec[i];
 
 
-
+		std::cout << "kebab2" << std::endl;
     return true;
 }
 
@@ -360,7 +377,7 @@ void CClassifier::readHaars(){
   while (getline(ifs,tmp))
 		haars.push_back(strToHaar(tmp));
 	
-
+	ifs.close();
 }
 
 
