@@ -85,12 +85,19 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 	std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
-	CClassifier::ImageType type = (*it)->type;
+	// check if first one is treetype or not
+	bool isNotTreeType = ((*it)->type != treeType);
 
+	// loop through examples, if any one has a different type than the first one its not the same classification
 	while(it != examples.end()){
 
-		if((*it)->type != type)
+		if(isNotTreeType){
+			if((*it)->type == treeType)
+				return false;
+		}else if((*it)->type != treeType){
 			return false;
+
+		}
 
 		++it;
 
@@ -102,7 +109,7 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 bool DecisionTree::isAttribsEmpty(const std::vector<bool> &attribs){
 
-
+	// if any attribute (ie haar feature) is true its not empty
 	for(int i=0;i<attribs.size();++i){
 		if(attribs[i]) return false;
 	}
@@ -117,6 +124,7 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 
 	std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
+	// find the amount of the sought type versus the other types
 	while(it != examples.end()){
 
 		if((*it)->type == treeType)
@@ -129,26 +137,16 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 
 	int max = std::max(other, sought);
 	
+	// find the most common types percentage and save it.
 	if(max != 0)
 		majorityPercent = float(max) / float(sought + other);
 
-	if(max == other)
+	if(max == sought)
+		majorityType = treeType;
+
+	else
 		majorityType = CClassifier::OTHER;
 
-	else if(max == mug)
-		majorityType = CClassifier::MUG;
-
-	else if(max == scissors)
-		majorityType = CClassifier::SCISSORS;
-
-	else if(max == clock)
-		majorityType = CClassifier::CLOCK;
-
-	else if(max == stapler)
-		majorityType = CClassifier::STAPLER;
-
-	else if(max == keyboard)
-		majorityType = CClassifier::KEYBOARD;
 
 }
 
