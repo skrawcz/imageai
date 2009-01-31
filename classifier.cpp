@@ -155,7 +155,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			}
 
 			// skip non-mug and non-other images (milestone only)
-			if ((fileList.files[i].label == "mug")){// || (fileList.files[i].label == "other")) {
+			if ((fileList.files[i].label == "mug") || (fileList.files[i].label == "other")) {
 					
 				// load the image
 				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
@@ -226,23 +226,17 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		for(unsigned i=0;i<HAARAMOUNT;++i)
 			attribs.push_back(true);
 
-		std::cout << tree << std::endl;
 
 		if(tree != NULL)
 			delete tree;
 
-		std::cout << "kebab1" << std::endl;
-
 		tree = new DecisionTree(haarOutVec, attribs, -1, CClassifier::OTHER);
 
 		
-
 		// clear out haar feature data
 		for(unsigned i=0;i<haarOutVec.size();++i)
 			delete haarOutVec[i];
 
-
-		std::cout << "kebab2" << std::endl;
     return true;
 }
 

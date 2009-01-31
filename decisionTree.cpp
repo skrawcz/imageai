@@ -69,7 +69,7 @@ void DecisionTree::print(std::ofstream &out, int level){
 		tabStr.append("\t");
 
 	out << tabStr << "<node>\n";
-	out << tabStr << "\t<isLeaf>" << isLeaf << "</isLeaf>";
+	out << tabStr << "\t<isLeaf>" << isLeaf << "</isLeaf>\n";
 
 
 
