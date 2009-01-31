@@ -149,6 +149,8 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
 		int c = 0; //my counter to only load a certain amount of images
+		bool flagM = true;
+		bool flagO = true;
     for (int i = 0; i < (int)fileList.files.size(); i++) {
 			// show progress
 			if (i % 1000 == 0) {
@@ -156,9 +158,16 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			}
 
 			// skip non-mug and non-other images (milestone only)
-			if ((fileList.files[i].label == "mug") || (fileList.files[i].label == "other")) {
+			if ((fileList.files[i].label == "mug" && flagM) ||
+			(fileList.files[i].label == "other" && flagO)) {
+				if(fileList.files[i].label == "mug" && c > 1){
+					flagM = false;
+				}
+				if(fileList.files[i].label == "other" && c > 10){
+					flagO = false;
+				}
 			  c++;//incrementing counter
-				if(c > 400 ){//if the counter is more then break
+				if(c > 10 ){//if the counter is more then break
 					break;
 				}
 				// load the image
@@ -182,12 +191,12 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				}
 				
 				//could display image
-				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+				cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 				//window - put outside loop
-				//cvShowIMage("WindowName",image); //display on screen
-				//cvWaitKey(0); //wait for key press
+				cvShowImage("WindowName",gray); //display on screen
+				cvWaitKey(0); //wait for key press
 				//remember to releaseImage...
-				//cvDestroyWindow("WindowName");//destroying view window - put
+				cvDestroyWindow("WindowName");//destroying view window - put
 				//outside loop
 
 			  // resize to 64 x 64

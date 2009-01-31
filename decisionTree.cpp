@@ -16,14 +16,15 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	isLeaf(false)
 
 {
-
+	std::cout << "in decision tree constructor" << std::endl;
 	if(examples.size() == 0){
 		isLeaf = true;
-
+		//std::cout << "examples.size == 0 " << std::endl;
+		
 	}
 
 	else if(sameClassification(examples)){
-
+		//std::cout << "in sameClassification " << std::endl;
 		isLeaf = true;
 		
 		// value something like 100 % of something :S
@@ -34,12 +35,13 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	}
 
 	else if(isAttribsEmpty(attribs)){
-
+		//std::cout << "in the attributes are empty" << std::endl;
 		isLeaf = true;
 		setMajorityValues(examples);
 
 	// now its established that we are not a leaf but a beautiful treeeee
 	}else{
+		//std::cout << "in else part " << std::endl;
 		int bestAttribute;
 		double bestThreshold;
 		chooseAttribute(examples, attribs, bestAttribute, bestThreshold);
@@ -48,25 +50,30 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 		std::vector<CClassifier::HaarOutput*>::iterator it = examples.begin();
 		std::vector<CClassifier::HaarOutput*> above, below;
 	
+		//std::cout << "splitting examples on best feature " << std::endl;
 		while(it != examples.end()){
 						
 			if((*it)->haarVals[bestAttribute] < bestThreshold)
 				below.push_back(*it);
 			else
 				above.push_back(*it);
-
+			
+			++it;
 		}
-
+		//problem with above and below size
+		std::cout << "finished splitting examples on best feature " <<std::endl;
+		std::cout << "size above = " << above.size() << " size below = " <<
+			below.size() << std::endl;
 		attribs.at(bestAttribute) = false;
 
-		DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType);
-
+		DecisionTree *child = new DecisionTree(above, attribs, majorityPercent, majorityType);
+		std::cout << "reached the end of first child " << std::endl;
 		children.push_back(child);
 
-		child = new DecisionTree(above, attribs, majorityPercent, majorityType);
+		child = new DecisionTree(below, attribs, majorityPercent, majorityType);
 
 		children.push_back(child);
-
+		std::cout << "reached the end" << std::endl;
 
 	}
 }
@@ -104,12 +111,17 @@ void DecisionTree::print(std::ofstream &out, int level){
 
 }
 
-void DecisionTree::chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold){
+void DecisionTree::chooseAttribute(const
+std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
+&attribs, int &bestAttribute, double &bestThreshold){
+
+	//std::cout << "in choose Attribute"<<std::endl;
 		int PositiveVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int NegativeVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int maxAttr;
 		double maxThr, maxInfoGain, tempInfoGain;
-
+		
+		//std::cout << "initialising the array to all zeros "<<std::endl;
 		//initialize all to 0
 		for (int attr=0; attr<HAARAMOUNT; ++attr){
 			for (int thr=0; thr<THRESHOLDVALS; ++thr){
@@ -119,10 +131,12 @@ void DecisionTree::chooseAttribute(const std::vector<CClassifier::HaarOutput*> &
 				NegativeVals[attr][thr][0] = 0;
 			}
 		}
-
+		//	std::cout << "finished intialising all the array to zeros "<<std::endl;
+		
 		//start iterator
 		std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
+		//	std::cout << "going through loop to get threshold value counts"<<std::endl;
 		//increment counts for each 
 		while(it != examples.end()){
 			for (int attr=0; attr<HAARAMOUNT; ++attr){
