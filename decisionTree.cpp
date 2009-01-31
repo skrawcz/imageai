@@ -1,6 +1,7 @@
 
 
 #include "decisionTree.h"
+#include <math.h>
 
 #include <algorithm>
 
@@ -39,8 +40,9 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 
 	// now its established that we are not a leaf but a beautiful treeeee
 	}else{
-		
-		haarType = chooseAttribute(examples, attribs);
+		int bestAttribute;
+		double bestThreshold;
+		chooseAttribute(examples, attribs, bestAttribute, bestThreshold);
 
 
 
@@ -81,11 +83,78 @@ void DecisionTree::print(std::ofstream &out, int level){
 
 }
 
-float DecisionTree::chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs){
+void DecisionTree::chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold){
+		int PositiveVals [HAARAMOUNT][THRESHOLDVALS][2];
+		int NegativeVals [HAARAMOUNT][THRESHOLDVALS][2];
+		int minAttr;
+		float minThr, minEntropy, tempEntropy;
 
+		//initialize all to 0
+		for (int attr=0; attr<HAARAMOUNT; attr++){
+			for (int thr=0; thr<THRESHOLDVALS; thr++){
+				PositiveVals[attr][thr][2] = 0;
+				NegativeVals[attr][thr][2] = 0;
+			}
+		}
 
-	return 0;
+		//start iterator
+		std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
+		//increment counts for each 
+		while(it != examples.end()){
+			for (int attr=0; attr<HAARAMOUNT; attr++){
+				for (int thr=0; thr<THRESHOLDVALS; thr++){
+
+					if ((*it)->haarVals[attr] > (0.1 + 0.1*thr)){
+						if ((*it)->type == treeType){
+							PositiveVals[attr][thr][1]++;
+						}else{
+							NegativeVals[attr][thr][1]++;
+						}
+					}else{
+						if ((*it)->type == treeType){
+							PositiveVals[attr][thr][0]++;
+						}else{
+							NegativeVals[attr][thr][0]++;
+						}
+					}
+
+				}
+			}
+		}
+
+	//min entropy initialized to 0
+	//store min entropy attr and threshold
+	minAttr = 0;
+	minThr = 0;
+	minEntropy = 1;
+	int mlp, mln, mlpUp, mlpDown, mlnUp, mlnDown;
+
+	for (int attr=0; attr<HAARAMOUNT; attr++){
+		for (int thr=0; thr<THRESHOLDVALS; thr++){
+			mlpUp = PositiveVals[attr][thr][1];
+			mlnUp = NegativeVals[attr][thr][1];
+			
+			mlpDown = PositiveVals[attr][thr][0];
+			mlnDown = NegativeVals[attr][thr][0];
+
+			mlp = mlpDown + mlnUp;
+			mln = mlnDown + mlnUp;
+
+				//calculate entropy
+			tempEntropy = (mlp+mln)*EntropyFunc(mlp/(mlp+mln)) 
+									 -(mlpUp + mlnUp)*EntropyFunc(mlpUp/(mlpUp+mlnUp))
+									 -(mlpDown + mlnDown)*EntropyFunc(mlpDown/(mlpDown+mlnDown));
+
+			if (tempEntropy < minEntropy){
+				minEntropy = tempEntropy;
+				minThr = thr;
+				minAttr = attr;
+			}
+		}
+	}
+	bestAttribute = minAttr;
+	bestThreshold = (0.1 + 0.1*minThr);
 }
 
 bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*> &examples){
@@ -155,6 +224,10 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 		majorityType = CClassifier::OTHER;
 
 
+}
+
+double DecisionTree::EntropyFunc(double p){
+	return -p * log(p)/log(2) - (1-p)*log(1-p)/log(2);
 }
 
 

@@ -8,6 +8,8 @@
 
 #include "classifier.h"
 
+#define THRESHOLDVALS 9
+
 class DecisionTree{
 
 
@@ -26,7 +28,7 @@ public:
 
 	void print(std::ofstream &out, int level);
 
-	float chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs);
+	void chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
 	static void setTreeType(CClassifier::ImageType t) { treeType = t; }
 
@@ -36,6 +38,7 @@ private:
 	bool sameClassification(const std::vector<CClassifier::HaarOutput*> &examples);
 	bool isAttribsEmpty(const std::vector<bool> &attribs);
 	void setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples);
+	double EntropyFunc(double p);
 
 
 	std::vector<DecisionTree*> children;
