@@ -38,7 +38,7 @@ private:
 	bool sameClassification(const std::vector<CClassifier::HaarOutput*> &examples);
 	bool isAttribsEmpty(const std::vector<bool> &attribs);
 	void setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples);
-	double EntropyFunc(double p);
+	long double EntropyFunc(long double p);
 
 
 	std::vector<DecisionTree*> children;
