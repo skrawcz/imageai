@@ -86,15 +86,19 @@ bool CClassifier::loadState(const char *filename)
 
 		std::string current;
 
-		getline(ifs, current);
+		// figure out what type of things the tree classifies
+		CXMLParser::getNextValue(ifs, current);
 
-		std::cout << current << std::endl;
+		CClassifier::ImageType treeType = (CClassifier::ImageType)atoi(current.c_str());
+
+		getline(ifs, current);
 
 		if(current.find("node") != std::string::npos)
 			tree = new DecisionTree(ifs, true);
 		else
 			tree = new DecisionTree(ifs, false);
 
+		tree->setTreeType(treeType);
 
 		saveState("bongo.xml");
 	
@@ -113,7 +117,7 @@ bool CClassifier::saveState(const char *filename)
 		
 		ofstream ofs ( filename );
 
-
+		ofs << "<treeType>" << tree->getTreeType() << "</treeType>\n";
 		tree->print(ofs, 0);
 
     ofs.close();

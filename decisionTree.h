@@ -31,7 +31,7 @@ public:
 	double chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
 	static void setTreeType(CClassifier::ImageType t) { treeType = t; }
-
+	CClassifier::ImageType getTreeType() { return treeType; }
 
 private:
 
