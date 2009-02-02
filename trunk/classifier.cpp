@@ -138,6 +138,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
+		HaarOutput *haarOut;
+
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
 				for (int w = 64; w<= 240; w = w+8){
@@ -165,7 +167,18 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							cvIntegral(resizedImage, integralImage);
 							cvReleaseImage(&resizedImage);
 
-							ImageType classifiedImage = OTHER;//classify(integralImage);
+							ImageType classifiedImage = OTHER;
+
+							//create haarOutput object that contains type and haar values of image
+							haarOut = new HaarOutput;
+				
+							// save haar features
+							applyHaar(integralImage, haarOut);
+
+							if(tree)
+								classifiedImage = tree->classify(haarOut);
+
+							delete haarOut;
 
 							//test this image
 							if (classifiedImage == MUG){
