@@ -45,7 +45,6 @@ private:
 
 	float majorityPercent;
 	CClassifier::ImageType majorityType;
-	int haarType;
 	bool isLeaf;
 	
 

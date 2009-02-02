@@ -168,6 +168,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					flagO = false;
 				}
 			  c++;//incrementing counter
+
 				if(c > 10){//if the counter is more then break
 					break;
 				}
@@ -192,12 +193,12 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				}
 /*
 				//could display image
-				cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 				//window - put outside loop
-				cvShowImage("WindowName",gray); //display on screen
-				cvWaitKey(0); //wait for key press
+				//cvShowImage("WindowName",gray); //display on screen
+				//cvWaitKey(0); //wait for key press
 				//remember to releaseImage...
-				cvDestroyWindow("WindowName");//destroying view window - put
+				//cvDestroyWindow("WindowName");//destroying view window - put
 				//outside loop
 */
 			  // resize to 64 x 64
