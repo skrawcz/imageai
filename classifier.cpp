@@ -160,6 +160,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			// skip non-mug and non-other images (milestone only)
 			if ((fileList.files[i].label == "mug" && flagM) ||
 			(fileList.files[i].label == "other" && flagO)) {
+				
 				if(fileList.files[i].label == "mug" && c > 1){
 					flagM = false;
 				}
@@ -167,7 +168,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					flagO = false;
 				}
 			  c++;//incrementing counter
-				if(c > 10 ){//if the counter is more then break
+				if(c > 10){//if the counter is more then break
 					break;
 				}
 				// load the image
@@ -189,7 +190,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				}else{
 					gray = image;
 				}
-				
+/*
 				//could display image
 				cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 				//window - put outside loop
@@ -198,7 +199,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				//remember to releaseImage...
 				cvDestroyWindow("WindowName");//destroying view window - put
 				//outside loop
-
+*/
 			  // resize to 64 x 64
 			  cvResize(image, smallImage);
 

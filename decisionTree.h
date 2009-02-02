@@ -28,7 +28,7 @@ public:
 
 	void print(std::ofstream &out, int level);
 
-	void chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
+	double chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
 	static void setTreeType(CClassifier::ImageType t) { treeType = t; }
 
