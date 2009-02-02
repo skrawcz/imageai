@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "CXMLParser.h"
+#include "highgui.h"
 
 CClassifier::ImageType DecisionTree::treeType = CClassifier::MUG;
 
@@ -87,10 +88,9 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 
 DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 
+	isLeaf = !isNode;
 
 	std::string current;
-
-	//getline(in,current);
 
 	// if it is a node
 	if(isNode){
@@ -113,7 +113,7 @@ DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 			
 			// create new node or leaf depending on what we find
 			if(current.find("<node>") != std::string::npos){
-				std::cout << current << std::endl;
+				
 				children.push_back(new DecisionTree(in, true));
 			}else{
 				children.push_back(new DecisionTree(in, false));
