@@ -20,7 +20,7 @@ public:
 							 float percent, CClassifier::ImageType type);
 
 	// create from xml file
-	DecisionTree(std::ifstream &in);
+	DecisionTree(std::ifstream &in, bool isNode);
 
 	~DecisionTree();
 

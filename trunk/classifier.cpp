@@ -22,6 +22,8 @@
 #include "decisionTree.h"
 
 #include "classifier.h"
+
+#include "CXMLParser.h"
 #include <math.h>
 
 using namespace std;
@@ -57,8 +59,45 @@ bool CClassifier::loadState(const char *filename)
 {
     assert(filename != NULL);
     
-    // CS221 TO DO: replace this with your own configuration code
-    
+    /*CXMLParser percy;
+
+		if(!percy.OpenFile(filename))
+			return false;
+
+		CXMLElement element;
+
+		while(!percy.HasFailed()){
+
+			percy.NextElement(&element);
+
+			std::cout << element.mSection << std::endl;
+			//std::cout << element.mValue << std::endl;
+			//std::cout << element.mInstruction << std::endl;
+
+		}
+
+
+    */
+
+		if(tree)
+			delete tree;
+
+		ifstream ifs ( filename, ifstream::in );
+
+		std::string current;
+
+		getline(ifs, current);
+
+		std::cout << current << std::endl;
+
+		if(current.find("node") != std::string::npos)
+			tree = new DecisionTree(ifs, true);
+		else
+			tree = new DecisionTree(ifs, false);
+
+
+		saveState("bongo.xml");
+	
     return true;
 }
 
@@ -224,7 +263,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				if(fileList.files[i].label == "other" && c > 50){
 					flagO = false;
 				}
-			  c++;//incrementing counter
+			  c++;//incrementing counter+
 
 				if(c > 100){//if the counter is more then break
 					break;

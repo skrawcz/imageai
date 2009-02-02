@@ -15,6 +15,9 @@
 #include <list>
 #include <map>
 #include <string>
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
 
 class CXMLParam
 {
@@ -84,6 +87,24 @@ public:
 
 	bool					HasFailed();
 	bool					EndOfFile();
+
+	// filips own fantastic function
+	static bool getNextValue(std::ifstream &in, std::string &current){
+
+		if(!getline(in,current))
+			return false;
+
+		//std::cout << current << std::endl;
+	
+		int start = current.find('>');
+		int end = current.find('<',++start);
+
+		current = current.substr(start,end-start);
+
+		return true;
+
+
+	}
 
 private:
 	char					NextCharacter( int* aVal );
