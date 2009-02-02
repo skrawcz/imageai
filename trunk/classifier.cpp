@@ -134,46 +134,45 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
-		for (int x = 0; x <=104; x = x+8){
-			for (int y = 0; y<104; y = y+8){
-				for (int w = 64; w<= 104; w = w+8){
-					//for milestone we can assume squares so h = w
-					int h = w;
+		for (int x = 0; x <=320; x = x+8){
+			for (int y = 0; y<=240; y = y+8){
+				for (int w = 64; w<= 240; w = w+8){
+					for (int h=64; h<=320; h = h+8){
+						if( (x+w < gray->width) && (y+h < gray->height) ) {
+							//clip the image to the right size
+							CvRect region = cvRect(x,y,w,h);
+							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
+																										 gray->depth, gray->nChannels);
+							cvSetImageROI(gray,region);
+							cvCopyImage(gray, clippedImage);
+							cvResetImageROI(gray);
 
-					if( (x+w < gray->width-8) && (y+h < gray->height-8) ) {
-						//clip the image to the right size
-						CvRect region = cvRect(x,y,w,h);
-						IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
-																									 gray->depth, gray->nChannels);
-						cvSetImageROI(gray,region);
-						cvCopyImage(gray, clippedImage);
-						cvResetImageROI(gray);
-
-						//scale image to 64x64
-						IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
-																									 clippedImage->depth, 
-																									 clippedImage->nChannels);
-						cvResize(clippedImage, resizedImage);
-						cvReleaseImage(&clippedImage);
+							//scale image to 64x64
+							IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
+																										 clippedImage->depth, 
+																										 clippedImage->nChannels);
+							cvResize(clippedImage, resizedImage);
+							cvReleaseImage(&clippedImage);
 					
-						//compute integral image
-						IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
-																													 resizedImage->height+1), 
-																										IPL_DEPTH_32S, 1);
-						cvIntegral(resizedImage, integralImage);
-						cvReleaseImage(&resizedImage);
+							//compute integral image
+							IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
+																														 resizedImage->height+1), 
+																											IPL_DEPTH_32S, 1);
+							cvIntegral(resizedImage, integralImage);
+							cvReleaseImage(&resizedImage);
 
-						ImageType classifiedImage = MUG;//classify(integralImage);
+							ImageType classifiedImage = OTHER;//classify(integralImage);
 
-						//test this image
-						if (classifiedImage == MUG){
-							CObject obj;
-							obj.rect = cvRect(x,y,w,h);
-							obj.label = "MUG";
-							objects->push_back(obj);
+							//test this image
+							if (classifiedImage == MUG){
+								CObject obj;
+								obj.rect = cvRect(x,y,w,h);
+								obj.label = "MUG";
+								objects->push_back(obj);
+							}
+
+							cvReleaseImage(&integralImage);
 						}
-
-						cvReleaseImage(&integralImage);
 					}
 				}
 			}
