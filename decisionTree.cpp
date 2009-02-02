@@ -2,9 +2,10 @@
 
 #include "decisionTree.h"
 #include <math.h>
-
+#include <stdlib.h>
 #include <algorithm>
 
+#include "CXMLParser.h"
 
 CClassifier::ImageType DecisionTree::treeType = CClassifier::MUG;
 
@@ -84,11 +85,60 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	}
 }
 
-DecisionTree::DecisionTree(std::ifstream &in){
+DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 
 
+	std::string current;
+
+	//getline(in,current);
+
+	// if it is a node
+	if(isNode){
+
+		// extract values  atoi and atof turn them into numbers
+		CXMLParser::getNextValue(in, current);
+		attribute = atoi(current.c_str());
+
+		CXMLParser::getNextValue(in, current);
+		threshold = atof(current.c_str());
+
+		// get first line of possible children or just end of node
+		getline(in,current);
+
+		//std::cout << current << std::endl;
+
+		// while the data stream doesnt contain the end of this object
+		while(current.find("</node>") == std::string::npos){
+
+			
+			// create new node or leaf depending on what we find
+			if(current.find("<node>") != std::string::npos){
+				std::cout << current << std::endl;
+				children.push_back(new DecisionTree(in, true));
+			}else{
+				children.push_back(new DecisionTree(in, false));
+			}
+
+			// grab the next line
+			getline(in,current);
+			//std::cout << current << std::endl;
+
+		}
 
 
+	}else{
+
+		// extract values  atoi and atof turn them into numbers
+		CXMLParser::getNextValue(in, current);
+		majorityType = (CClassifier::ImageType)atoi(current.c_str());
+
+		CXMLParser::getNextValue(in, current);
+		majorityPercent = atoi(current.c_str());
+
+		// kill the end </leaf>
+		getline(in, current);
+
+	}
 }
 DecisionTree::~DecisionTree(){
 
