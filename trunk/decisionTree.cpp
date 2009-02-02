@@ -117,8 +117,8 @@ void DecisionTree::print(std::ofstream &out, int level){
 
 	out << tabStr << "<node>\n";
 	out << tabStr << "\t<isLeaf>" << isLeaf << "</isLeaf>\n";
-
-
+	out << tabStr << "\t<majorityPercent>" << majorityPercent << "</majorityPercent>\n";
+	out << tabStr << "\t<majorityType>" << isLeaf << "</majorityType>\n";
 
 
 	for(unsigned i=0;i<children.size();++i)
@@ -276,19 +276,33 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 	// check if first one is treetype or not
 	bool isNotTreeType = ((*it)->type != treeType);
 
-	// loop through examples, if any one has a different type than the first one its not the same classification
-	while(it != examples.end()){
+		
+			
+		
 
-		if(isNotTreeType){
+	// loop through examples, if any one has a different type than the first one its not the same classification
+	if(isNotTreeType){
+
+		while(it != examples.end()){
+
 			if((*it)->type == treeType)
 				return false;
-		}else if((*it)->type != treeType){
-			return false;
+
+			++it;
 
 		}
+	}else{
 
-		++it;
+		while(it != examples.end()){
 
+			if((*it)->type != treeType){
+				return false;
+	
+			}
+
+			++it;
+
+		}
 	}
 	
 	return true;
