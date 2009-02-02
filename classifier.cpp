@@ -140,7 +140,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 					//for milestone we can assume squares so h = w
 					int h = w;
 
-					if( (x+w < gray->width) && (y+h < gray->height) ) {
+					if( (x+w < gray->width-8) && (y+h < gray->height-8) ) {
 						//clip the image to the right size
 						CvRect region = cvRect(x,y,w,h);
 						IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
