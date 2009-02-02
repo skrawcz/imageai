@@ -16,7 +16,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	isLeaf(false)
 
 {
-	std::cout << "in decision tree constructor" << std::endl;
+	//std::cout << "in decision tree constructor" << std::endl;
 	if(examples.size() == 0){
 		isLeaf = true;
 		//std::cout << "examples.size == 0 " << std::endl;
@@ -44,39 +44,54 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 		//std::cout << "in else part " << std::endl;
 		int bestAttribute;
 		double bestThreshold;
-		chooseAttribute(examples, attribs, bestAttribute, bestThreshold);
-		std::cout << "bestThres = "<<bestThreshold<<"	bestAttri = "<<bestAttribute<< std::endl;
+		double infogain;
+		infogain = chooseAttribute(examples, attribs, bestAttribute, bestThreshold);
+	
 		setMajorityValues(examples);
+
+		if(infogain == 0){
+			isLeaf = true;
+		}else{
 		
-		std::vector<CClassifier::HaarOutput*>::iterator it = examples.begin();
-		std::vector<CClassifier::HaarOutput*> above, below;
+			std::vector<CClassifier::HaarOutput*>::iterator it = examples.begin();
+			std::vector<CClassifier::HaarOutput*> above, below;
 	
-		//std::cout << "splitting examples on best feature " << std::endl;
-		while(it != examples.end()){
+			//std::cout << "splitting examples on best feature " << std::endl;
+			while(it != examples.end()){
 						
-			if((*it)->haarVals[bestAttribute] < bestThreshold)
-				below.push_back(*it);
-			else
-				above.push_back(*it);
-			
-			++it;
-		}
-		//problem with above and below size
-		std::cout << "finished splitting examples on best feature " <<std::endl;
-		std::cout << "size above = " << above.size() << " size below = " <<
-			below.size() << std::endl;
-		attribs.at(bestAttribute) = false;
+				if((*it)->haarVals[bestAttribute] < bestThreshold){
+					below.push_back(*it);
+					//std::cout<< "Above type: " << (*it)->type <<std::endl;
+				}else{
+					above.push_back(*it);
+					std::cout<< "Below type: " << (*it)->type <<std::endl;
+					for(int hi=0; hi<HAARAMOUNT; ++hi){
+						std::cout<<(*it)->haarVals[hi]<<" ";
+						if(hi%10 == 0){
+							std::cout<<std::endl;
+						}
+					}
+					std::cout<<std::endl;
+				}
+				++it;
+			}
+			//problem with above and below size
+			std::cout << "finished splitting examples on best feature " <<std::endl;
+			std::cout << "size above = " << above.size() << " size below = " <<
+				below.size() << std::endl;
+
+			attribs.at(bestAttribute) = false;
 	
-		DecisionTree *child = new DecisionTree(above, attribs, majorityPercent, majorityType);
-		//std::cout << "reached the end of first child " << std::endl;
+			DecisionTree *child = new DecisionTree(above, attribs, majorityPercent, majorityType);
+			//std::cout << "reached the end of first child " << std::endl;
 		
-		children.push_back(child);
+			children.push_back(child);
 
-		child = new DecisionTree(below, attribs, majorityPercent, majorityType);
+			child = new DecisionTree(below, attribs, majorityPercent, majorityType);
 
-		children.push_back(child);
-		//	std::cout << "reached the end" << std::endl;
-
+			children.push_back(child);
+			//	std::cout << "reached the end" << std::endl;
+		}
 	}
 }
 
@@ -113,11 +128,11 @@ void DecisionTree::print(std::ofstream &out, int level){
 
 }
 
-void DecisionTree::chooseAttribute(const
+double DecisionTree::chooseAttribute(const
 std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 &attribs, int &bestAttribute, double &bestThreshold){
 
-	  std::cout << "in choose Attribute"<<std::endl;
+	  //std::cout << "in choose Attribute"<<std::endl;
 		
 		int PositiveVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int NegativeVals [HAARAMOUNT][THRESHOLDVALS][2];
@@ -177,8 +192,6 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 			++it;
 		}
 		
-	//min entropy initialized to 0
-	//store min entropy attr and threshold
 	maxAttr = -1;
 	maxThr = -1;
 	maxInfoGain = -1;
@@ -242,16 +255,18 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 			//std::cout<<"temp info gain = "<<tempInfoGain << std::endl;
 			
 			if ( tempInfoGain > maxInfoGain){
-				std::cout <<"Reset max info gain" << std::endl;
+				//std::cout <<"Reset max info gain" << std::endl;
 				maxInfoGain = tempInfoGain;
 				maxThr = thr;
 				maxAttr = attr;
 			}
 		}
 	}
+
 	bestAttribute = maxAttr;
 	bestThreshold = (0.1 + 0.1*maxThr);
 	std::cout<<"attr ="<<bestAttribute<<" thres ="<<bestThreshold<<" max gain= "<<maxInfoGain<<std::endl;
+	return maxInfoGain;
 }
 
 bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*> &examples){
