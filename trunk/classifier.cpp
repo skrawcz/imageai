@@ -135,7 +135,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
 		for (int x = 0; x <=104; x = x+8){
-			for (int y = 0; y<104; x = x+8){
+			for (int y = 0; y<104; y = y+8){
 				for (int w = 64; w<= 104; w = w+8){
 					//for milestone we can assume squares so h = w
 					int h = w;
