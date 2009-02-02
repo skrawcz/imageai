@@ -161,15 +161,15 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			if ((fileList.files[i].label == "mug" && flagM) ||
 			(fileList.files[i].label == "other" && flagO)) {
 				
-				if(fileList.files[i].label == "mug" && c > 1){
+				if(fileList.files[i].label == "mug" && c > 25){
 					flagM = false;
 				}
-				if(fileList.files[i].label == "other" && c > 10){
+				if(fileList.files[i].label == "other" && c > 50){
 					flagO = false;
 				}
 			  c++;//incrementing counter
 
-				if(c > 10){//if the counter is more then break
+				if(c > 100){//if the counter is more then break
 					break;
 				}
 				// load the image
