@@ -24,7 +24,7 @@ public:
 
 	~DecisionTree();
 
-	//DecisionTree* learn(){return NULL;};
+	CClassifier::ImageType classify(CClassifier::HaarOutput *haary);
 
 	void print(std::ofstream &out, int level);
 

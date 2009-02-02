@@ -344,6 +344,25 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 }
 
+CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary){
+
+	if(!isLeaf){
+		if(haary->haarVals[attribute] > threshold){
+
+			return children.at(0)->classify(haary);
+
+		}else{
+
+			return children.at(1)->classify(haary);
+
+		}
+	}else{
+
+		return majorityType;
+	}
+
+}
+
 bool DecisionTree::isAttribsEmpty(const std::vector<bool> &attribs){
 
 	// if any attribute (ie haar feature) is true its not empty
