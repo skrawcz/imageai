@@ -42,10 +42,8 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	// now its established that we are not a leaf but a beautiful treeeee
 	}else{
 		//std::cout << "in else part " << std::endl;
-		int bestAttribute;
-		double bestThreshold;
 		double infogain;
-		infogain = chooseAttribute(examples, attribs, bestAttribute, bestThreshold);
+		infogain = chooseAttribute(examples, attribs, attribute, threshold);
 	
 		setMajorityValues(examples);
 
@@ -59,35 +57,26 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 			//std::cout << "splitting examples on best feature " << std::endl;
 			while(it != examples.end()){
 						
-				if((*it)->haarVals[bestAttribute] < bestThreshold){
+				if((*it)->haarVals[attribute] < threshold){
 					below.push_back(*it);
-					//std::cout<< "Above type: " << (*it)->type <<std::endl;
 				}else{
 					above.push_back(*it);
-					std::cout<< "Below type: " << (*it)->type <<std::endl;
-					for(int hi=0; hi<HAARAMOUNT; ++hi){
-						std::cout<<(*it)->haarVals[hi]<<" ";
-						if(hi%10 == 0){
-							std::cout<<std::endl;
-						}
-					}
-					std::cout<<std::endl;
 				}
 				++it;
 			}
 			//problem with above and below size
-			std::cout << "finished splitting examples on best feature " <<std::endl;
-			std::cout << "size above = " << above.size() << " size below = " <<
-				below.size() << std::endl;
+			//std::cout << "finished splitting examples on best feature " <<std::endl;
+			//std::cout << "size above = " << above.size() << " size below = " <<
+			//	below.size() << std::endl;
 
-			attribs.at(bestAttribute) = false;
+			attribs.at(attribute) = false;
 	
-			DecisionTree *child = new DecisionTree(above, attribs, majorityPercent, majorityType);
+			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType);
 			//std::cout << "reached the end of first child " << std::endl;
 		
 			children.push_back(child);
 
-			child = new DecisionTree(below, attribs, majorityPercent, majorityType);
+			child = new DecisionTree(above, attribs, majorityPercent, majorityType);
 
 			children.push_back(child);
 			//	std::cout << "reached the end" << std::endl;
@@ -115,16 +104,21 @@ void DecisionTree::print(std::ofstream &out, int level){
 	for(int i=0;i<=level;++i)
 		tabStr.append("\t");
 
-	out << tabStr << "<node>\n";
-	out << tabStr << "\t<isLeaf>" << isLeaf << "</isLeaf>\n";
-	out << tabStr << "\t<majorityPercent>" << majorityPercent << "</majorityPercent>\n";
-	out << tabStr << "\t<majorityType>" << isLeaf << "</majorityType>\n";
+	if(isLeaf){
+		out << tabStr << "<Leaf>\n";
+		out << tabStr << "\t<majorityType>" << majorityType << "</majorityType>\n";
+		out << tabStr << "\t<majorityPercent>" << majorityPercent << "</majorityPercent>\n";
+		out << tabStr << "</leaf>\n";
+	}else{
+		out << tabStr << "<node>\n";
+		out << tabStr << "\t<attribute>" << attribute << "</attribute>\n";
+		out << tabStr << "\t<threshold>" << threshold << "</threshold>\n";
+	
+		for(unsigned i=0;i<children.size();++i)
+				children[i]->print(out, level + 1);
 
-
-	for(unsigned i=0;i<children.size();++i)
-			children[i]->print(out, level + 1);
-
-	out << tabStr << "</node>\n";
+		out << tabStr << "</node>\n";
+	}
 
 }
 
@@ -169,21 +163,15 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 				for (int thr=0; thr<THRESHOLDVALS; ++thr){
 					
 					if ((*it)->haarVals[attr] > (0.1 + 0.1*thr)){
-						//std::cout << "above threshold";
 						if ((*it)->type == treeType){
-							//	std::cout << " - positive"<<std::endl;
 							PositiveVals[attr][thr][1]++;
 						}else{
-							//	std::cout << " - negative"<<std::endl;
 							NegativeVals[attr][thr][1]++;
 						}
 					}else{
-						//	std::cout << "below threshold";
 						if ((*it)->type == treeType){
-							//	std::cout << " - positive"<<std::endl;
 							PositiveVals[attr][thr][0]++;
 						}else{
-							//	std::cout << " - negative"<<std::endl;
 							NegativeVals[attr][thr][0]++;
 						}
 					}
@@ -200,9 +188,8 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 	for (int attr=0; attr<HAARAMOUNT; ++attr){
 		//std::cout <<"calculating max info gain = "<<std::endl;
 
-		//stefan's attempt at figuring out what's wrong
+		//if attribute is already used skip it
 		if(!attribs.at(attr)){
-			//std::cout <<"max infogain: skipping attrib #"<<attr<<" value = "<< attribs.at(attr)<<std::endl;
 			continue;
 		}
 
@@ -223,36 +210,34 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 			// total # negative
 			mln = mlnDown + mlnUp;
 			long double ml1,mlpUp1,mlpDwn1;
-			if(mlp+mln ==0.0 || mlp ==0.0){
+
+			//Default values to 0 if it'll make the entropy function angry
+			if(mlp ==0.0 || mln == 0){
 				ml1 = 0.0;
 			}
 			else{
 				ml1 = (mlp+mln)*EntropyFunc(mlp/(mlp+mln));
 			}
-			if(mlpUp+mlnUp==0.0|| mlpUp ==0.0){
+			if(mlnUp==0.0|| mlpUp ==0.0){
 				mlpUp1 = 0.0;
 			}
 			else{
 				mlpUp1 = (mlpUp + mlnUp)*EntropyFunc(mlpUp/(mlpUp+mlnUp));
 			}
-			if(mlpDown+mlnDown==0.0 || mlpDown ==0.0){
+			if(mlnDown==0.0 || mlpDown ==0.0){
 				mlpDwn1 =0.0;
 			}
 			else{
 				mlpDwn1 = (mlpDown + mlnDown)*EntropyFunc(mlpDown/(mlpDown+mlnDown));
 			}
 
-			//std::cout <<"ml1 ="<<ml1<<std::endl;
-			//std::cout <<"mlpUp1 ="<<mlpUp1<<std::endl;
-			//std::cout <<"mlpUp = "<<mlpUp<<" mlpUp+mlnUp = "<<mlpUp+mlnUp<<std::endl;
-			//std::cout <<"mlpDwn1 ="<<mlpDwn1<<std::endl;
-			
+			/*
+			std::cout <<"ml1 ="<<ml1<<std::endl;
+			std::cout <<"mlpUp1 ="<<mlpUp1<<std::endl;
+			std::cout <<"mlpUp = "<<mlpUp<<" mlpUp+mlnUp = "<<mlpUp+mlnUp<<std::endl;
+			std::cout <<"mlpDwn1 ="<<mlpDwn1<<std::endl;
+			*/
 			tempInfoGain = ml1 - mlpUp1 - mlpDwn1;
-			//calculate Infoformation Gain
-			//tempInfoGain = (mlp+mln)*EntropyFunc(mlp/(mlp+mln)) 
-			//						 -(mlpUp + mlnUp)*EntropyFunc(mlpUp/(mlpUp+mlnUp))
-			//						 -(mlpDown + mlnDown)*EntropyFunc(mlpDown/(mlpDown+mlnDown));
-			//std::cout<<"temp info gain = "<<tempInfoGain << std::endl;
 			
 			if ( tempInfoGain > maxInfoGain){
 				//std::cout <<"Reset max info gain" << std::endl;
@@ -265,7 +250,7 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 
 	bestAttribute = maxAttr;
 	bestThreshold = (0.1 + 0.1*maxThr);
-	std::cout<<"attr ="<<bestAttribute<<" thres ="<<bestThreshold<<" max gain= "<<maxInfoGain<<std::endl;
+	//std::cout<<"attr ="<<bestAttribute<<" thres ="<<bestThreshold<<" max gain= "<<maxInfoGain<<std::endl;
 	return maxInfoGain;
 }
 

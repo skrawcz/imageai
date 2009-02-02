@@ -46,6 +46,8 @@ private:
 	float majorityPercent;
 	CClassifier::ImageType majorityType;
 	bool isLeaf;
+	int attribute;
+	double threshold;
 	
 
 	static CClassifier::ImageType treeType;
