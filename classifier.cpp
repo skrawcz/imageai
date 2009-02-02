@@ -90,6 +90,61 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
     
     // CS221 TO DO: replace this with your own code
 
+		//convert to gray scale
+		IplImage *gray;
+		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
+		cvCvtColor(frame,gray,CV_BGR2GRAY);
+
+		for (int x = 0; x <=104; x = x+8){
+			for (int y = 0; y<104; x = x+8){
+				for (int w = 64; w<= 104; w = w+8){
+					//for milestone we can assume squares so h = w
+					int h = w;
+
+					if( (x+w < gray->width) && (y+h < gray->height) ) {
+						//clip the image to the right size
+						CvRect region = cvRect(x,y,w,h);
+						IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
+																									 gray->depth, gray->nChannels);
+						cvSetImageROI(gray,region);
+						cvCopyImage(gray, clippedImage);
+						cvResetImageROI(gray);
+
+						//scale image to 64x64
+						IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
+																									 clippedImage->depth, 
+																									 clippedImage->nChannels);
+						cvResize(clippedImage, resizedImage);
+						cvReleaseImage(&clippedImage);
+					
+						//compute integral image
+						IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
+																													 resizedImage->height+1), 
+																										IPL_DEPTH_32S, 1);
+						cvIntegral(resizedImage, integralImage);
+						cvReleaseImage(&resizedImage);
+
+						ImageType classifiedImage = MUG;//classify(integralImage);
+
+						//test this image
+						if (classifiedImage == MUG){
+							CObject obj;
+							obj.rect = cvRect(x,y,w,h);
+							obj.label = "MUG";
+							objects->push_back(obj);
+						}
+
+						cvReleaseImage(&integralImage);
+					}
+				}
+			}
+		}
+		cvReleaseImage(&gray);
+
+		return true;
+
+
+/*
     // Example code which returns up to 10 random objects, each object
     // having a width and height equal to half the frame size.
     const char *labels[5] = {
@@ -106,6 +161,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
     }
 
     return true;
+
+*/
 }
         
 // train
