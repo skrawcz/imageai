@@ -347,7 +347,7 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary){
 
 	if(!isLeaf){
-		if(haary->haarVals[attribute] > threshold){
+		if(haary->haarVals[attribute] <= threshold){
 
 			return children.at(0)->classify(haary);
 
@@ -357,7 +357,6 @@ CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary){
 
 		}
 	}else{
-
 		return majorityType;
 	}
 

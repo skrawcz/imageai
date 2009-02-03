@@ -142,9 +142,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
-				for (int w = 64; w<= 240; w = w+8){
-					for (int h=64; h<=320; h = h+8){
-						if( (x+w < gray->width) && (y+h < gray->height) ) {
+				for (int w = 64; w<=320; w = w+8){
+					for (int h = 64; h<=240; h = h+8){
+						if( (x+w <= gray->width) && (y+h <= gray->height) && (w==h)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
 							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
@@ -159,13 +159,24 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 																										 clippedImage->nChannels);
 							cvResize(clippedImage, resizedImage);
 							cvReleaseImage(&clippedImage);
+							
+							/*if(w>200){
+								//could display image
+								cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								//window - put outside loop
+								cvShowImage("WindowName",resizedImage); //display on screen
+								cvWaitKey(0); //wait for key press
+								//remember to releaseImage...
+								cvDestroyWindow("WindowName");//destroying view window - put
+								//outside loop
+							}*/
 					
 							//compute integral image
 							IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
 																														 resizedImage->height+1), 
 																											IPL_DEPTH_32S, 1);
 							cvIntegral(resizedImage, integralImage);
-							cvReleaseImage(&resizedImage);
+							//cvReleaseImage(&resizedImage);
 
 							ImageType classifiedImage = OTHER;
 
@@ -186,8 +197,17 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								obj.rect = cvRect(x,y,w,h);
 								obj.label = "MUG";
 								objects->push_back(obj);
-							}
 
+								//could display image
+								cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								//window - put outside loop
+								cvShowImage("WindowName",resizedImage); //display on screen
+								cvWaitKey(0); //wait for key press
+								//remember to releaseImage...
+								cvDestroyWindow("WindowName");//destroying view window - put
+								//outside loop
+							}
+							cvReleaseImage(&resizedImage);
 							cvReleaseImage(&integralImage);
 						}
 					}
@@ -273,6 +293,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			if ((fileList.files[i].label == "mug" && flagM) ||
 			(fileList.files[i].label == "other" && flagO)) {
 				
+				/*
 				if(fileList.files[i].label == "mug" && c > 25){
 					flagM = false;
 				}
@@ -284,6 +305,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				if(c > 100){//if the counter is more then break
 					break;
 				}
+				*/
 				// load the image
 				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
 				if (image == NULL) {
