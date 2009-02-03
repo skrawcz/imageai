@@ -11,7 +11,7 @@
 CClassifier::ImageType DecisionTree::treeType = CClassifier::MUG;
 
 DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
-													 float percent, CClassifier::ImageType type) 
+													 float percent, CClassifier::ImageType type, int depth) 
 
 : majorityPercent(percent) , 
 	majorityType(type),
@@ -23,9 +23,12 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 		isLeaf = true;
 		std::cout << "examples.size == 0 " << std::endl;
 		
-	}
+	}else if(depth > 10){
 
-	else if(sameClassification(examples)){
+		isLeaf = true;
+		
+
+	}else if(sameClassification(examples)){
 		//std::cout << "in sameClassification " << std::endl;
 		isLeaf = true;
 		
@@ -49,7 +52,8 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	
 		setMajorityValues(examples);
 
-		if(infogain <= 20){
+
+		if(infogain <= 10){
 			isLeaf = true;
 		}else{
 		
@@ -59,8 +63,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 			//std::cout << "splitting examples on best feature " << std::endl;
 			while(it != examples.end()){
 						
-					if((*it)->haarVals[attribute] <= threshold){
-				//if((*it)->haarVals[attribute] > threshold){
+				if((*it)->haarVals[attribute] <= threshold){
 					below.push_back(*it);
 				}else{
 					above.push_back(*it);
@@ -73,15 +76,15 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 
 			attribs.at(attribute) = false;
 	
-			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType);
+			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType, ++depth);
 			//std::cout << "reached the end of first child " << std::endl;
 		
 			children.push_back(child);
 
-			child = new DecisionTree(above, attribs, majorityPercent, majorityType);
+			child = new DecisionTree(above, attribs, majorityPercent, majorityType, ++depth);
 
 			children.push_back(child);
-			//	std::cout << "reached the end" << std::endl;
+
 		}
 	}
 }
@@ -133,7 +136,7 @@ DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 		majorityType = (CClassifier::ImageType)atoi(current.c_str());
 
 		CXMLParser::getNextValue(in, current);
-		majorityPercent = atoi(current.c_str());
+		majorityPercent = atof(current.c_str());
 
 		// kill the end </leaf>
 		getline(in, current);
@@ -343,23 +346,26 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 }
 
-CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary){
+CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary, double *percent){
 	
 	//std::cout << "in classify"<< std::endl;
 	if(!isLeaf){
 		//if(haary->haarVals[attribute] > threshold){
 		if(haary->haarVals[attribute] <= threshold){
-
-			return children.at(0)->classify(haary);
+			
+			return children.at(0)->classify(haary, percent);
 
 		}else{
 
-			return children.at(1)->classify(haary);
+			return children.at(1)->classify(haary, percent);
 
 		}
 	}else{
 		//std::cout << "majority percent = "<<majorityPercent;
 		//std::cout << " majority type = "<<majorityType << std::endl;
+		*percent = majorityPercent;
+
+		//std::cout << majorityPercent << std::endl;
 		return majorityType;
 	}
 
@@ -400,6 +406,7 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 		majorityPercent = float(max) / float(positive + negative);
 	else
 		majorityPercent = 0.0;
+
 
 	if(max == positive)
 		majorityType = treeType;

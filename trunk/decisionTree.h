@@ -17,14 +17,14 @@ public:
 
 	// just create
 	DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
-							 float percent, CClassifier::ImageType type);
+							 float percent, CClassifier::ImageType type, int depth);
 
 	// create from xml file
 	DecisionTree(std::ifstream &in, bool isNode);
 
 	~DecisionTree();
 
-	CClassifier::ImageType classify(CClassifier::HaarOutput *haary);
+	CClassifier::ImageType classify(CClassifier::HaarOutput *haary, double *percent);
 
 	void print(std::ofstream &out, int level);
 
