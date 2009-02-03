@@ -59,6 +59,8 @@ bool CClassifier::loadState(const char *filename)
 {
     assert(filename != NULL);
 
+		readHaars();
+
 		if(tree)
 			delete tree;
 
@@ -118,12 +120,22 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
-		HaarOutput *haarOut;
 
+		HaarOutput *haarOut;
+/*
+		//could display image
+		cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+		//window - put outside loop
+		cvShowImage("WindowName",gray); //display on screen
+		cvWaitKey(0); //wait for key press
+		//remember to releaseImage...
+		cvDestroyWindow("WindowName");//destroying view window - put
+		//outside loop
+*/
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
-				for (int w = 64; w<=320; w = w+8){
-					for (int h = 64 ; h<=240; h = h+8){
+				for (int w = 104; w<=320; w = w+8){
+					for (int h = 104 ; h<=240; h = h+8){
 						if( (x+w <= gray->width) && (y+h <= gray->height) && (w==h)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
@@ -206,7 +218,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								//outside loop
 								*/
 								
-							}else{
+							}else {
 								//CObject obj;
 								//obj.rect = cvRect(x,y,w,h);
 								//obj.label = "Other";
