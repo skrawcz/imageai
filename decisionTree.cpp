@@ -21,7 +21,6 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	//std::cout << "in decision tree constructor" << std::endl;
 	if(examples.size() == 0){
 		isLeaf = true;
-		std::cout << "examples.size == 0 " << std::endl;
 		
 	}else if(depth > 10){
 
@@ -29,7 +28,6 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 		
 
 	}else if(sameClassification(examples)){
-		//std::cout << "in sameClassification " << std::endl;
 		isLeaf = true;
 		
 		// value something like 100 % of something :S
@@ -40,13 +38,11 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	}
 
 	else if(isAttribsEmpty(attribs)){
-		std::cout << "in the attributes are empty" << std::endl;
 		isLeaf = true;
 		setMajorityValues(examples);
 
 	// now its established that we are not a leaf but a beautiful treeeee
 	}else{
-		//std::cout << "in else part " << std::endl;
 		double infogain;
 		infogain = chooseAttribute(examples, attribs, attribute, threshold);
 	
@@ -60,7 +56,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 			std::vector<CClassifier::HaarOutput*>::iterator it = examples.begin();
 			std::vector<CClassifier::HaarOutput*> above, below;
 	
-			//std::cout << "splitting examples on best feature " << std::endl;
+			//splitting examples on best feature 
 			while(it != examples.end()){
 						
 				if((*it)->haarVals[attribute] <= threshold){
@@ -70,14 +66,12 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 				}
 				++it;
 			}
-			//problem with above and below size
-			//std::cout << "finished splitting examples on best feature " <<std::endl;
-			//std::cout << "size above = " << above.size() << " size below = " <<	below.size() << std::endl;
+			//finished splitting examples on best feature
 
 			attribs.at(attribute) = false;
 	
 			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType, ++depth);
-			//std::cout << "reached the end of first child " << std::endl;
+			//reached the end of first child 
 		
 			children.push_back(child);
 
@@ -108,7 +102,6 @@ DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 		// get first line of possible children or just end of node
 		getline(in,current);
 
-		//std::cout << current << std::endl;
 
 		// while the data stream doesnt contain the end of this object
 		while(current.find("</node>") == std::string::npos){
@@ -124,8 +117,6 @@ DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 
 			// grab the next line
 			getline(in,current);
-			//std::cout << current << std::endl;
-
 		}
 
 
@@ -179,14 +170,12 @@ double DecisionTree::chooseAttribute(const
 std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 &attribs, int &bestAttribute, double &bestThreshold){
 
-	  //std::cout << "in choose Attribute"<<std::endl;
 		
 		int PositiveVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int NegativeVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int maxAttr;
     long double maxThr, maxInfoGain, tempInfoGain;
 		
-		//std::cout << "initialising the array to all zeros "<<std::endl;
 		//initialize all to 0
 		for (int attr=0; attr<HAARAMOUNT; ++attr){
 			for (int thr=0; thr<THRESHOLDVALS; ++thr){
@@ -196,20 +185,16 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 				NegativeVals[attr][thr][0] = 0;
 			}
 		}
-		//	std::cout << "finished intialising all the array to zeros "<<std::endl;
 		
 		//start iterator
 		std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
 
-		//	std::cout << "going through loop to get threshold value counts"<<std::endl;
 		//increment counts for each 
-
 		while(it != examples.end()){
 			for (int attr=0; attr<HAARAMOUNT; ++attr){
 
-				//stefan's attempt at figuring out what's wrong
+				//if attribute is already used skip it
 				if(!attribs.at(attr)){
-					//std::cout <<"get thres count: skipping attrib #"<<attr<<" value = "<< attribs.at(attr)<<std::endl;
 					continue;
 				}
 				
@@ -264,7 +249,7 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 			mln = mlnDown + mlnUp;
 			long double ml1,mlpUp1,mlpDwn1;
 
-			//Default values to 0 if it'll make the entropy function angry
+			//Default values to 0 if it'll make the entropy function angry (i.e 0 or 1)
 			if(mlp ==0.0 || mln == 0){
 				ml1 = 0.0;
 			}
@@ -284,12 +269,6 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 				mlpDwn1 = (mlpDown + mlnDown)*EntropyFunc(mlpDown/(mlpDown+mlnDown));
 			}
 
-			/*
-			std::cout <<"ml1 ="<<ml1<<std::endl;
-			std::cout <<"mlpUp1 ="<<mlpUp1<<std::endl;
-			std::cout <<"mlpUp = "<<mlpUp<<" mlpUp+mlnUp = "<<mlpUp+mlnUp<<std::endl;
-			std::cout <<"mlpDwn1 ="<<mlpDwn1<<std::endl;
-			*/
 			tempInfoGain = ml1 - mlpUp1 - mlpDwn1;
 			
 			if ( tempInfoGain > maxInfoGain){
@@ -302,7 +281,6 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 
 	bestAttribute = maxAttr;
 	bestThreshold = (0.1 + 0.1*maxThr);
-	//std::cout<<"attr ="<<bestAttribute<<" thres ="<<bestThreshold<<" max gain= "<<maxInfoGain<<std::endl;
 	return maxInfoGain;
 }
 
@@ -312,10 +290,6 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 	// check if first one is treetype or not
 	bool isNotTreeType = ((*it)->type != treeType);
-
-		
-			
-		
 
 	// loop through examples, if any one has a different type than the first one its not the same classification
 	if(isNotTreeType){
@@ -348,9 +322,7 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary, double *percent){
 	
-	//std::cout << "in classify"<< std::endl;
 	if(!isLeaf){
-		//if(haary->haarVals[attribute] > threshold){
 		if(haary->haarVals[attribute] <= threshold){
 			
 			return children.at(0)->classify(haary, percent);
@@ -361,11 +333,8 @@ CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary, do
 
 		}
 	}else{
-		//std::cout << "majority percent = "<<majorityPercent;
-		//std::cout << " majority type = "<<majorityType << std::endl;
 		*percent = majorityPercent;
 
-		//std::cout << majorityPercent << std::endl;
 		return majorityType;
 	}
 
@@ -410,9 +379,6 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 
 	if(max == positive)
 		majorityType = treeType;
-	
-	//if (majorityPercent >= 0.5)
-	//	majorityType = treeType;
 	else
 		majorityType = CClassifier::OTHER;
 
@@ -421,7 +387,6 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 
 long double DecisionTree::EntropyFunc(long double p){
 	return -p * log(p)/M_LN2 - (1-p)*log(1-p)/M_LN2;
-	//return -p * log(p)/log(2) - (1-p)*log(1-p)/log(2);
 }
 
 

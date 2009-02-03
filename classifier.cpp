@@ -123,22 +123,15 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		HaarOutput *haarOut;
 		CObject obj;
-/*
-		//could display image
-		cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-		//window - put outside loop
-		cvShowImage("WindowName",gray); //display on screen
-		cvWaitKey(0); //wait for key press
-		//remember to releaseImage...
-		cvDestroyWindow("WindowName");//destroying view window - put
-		//outside loop
-*/
+
 		double highestPercent = 0.01;
 
+		//iterate through candidate frames
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
-				for (int w = 104; w<=320; w = w+8){
-					for (int h = 104 ; h<=240; h = h+8){
+				for (int w = 64; w<=320; w = w+8){
+					for (int h = 64 ; h<=240; h = h+8){
+						//check if we are out of frame & for milestone only take squares
 						if( (x+w <= gray->width) && (y+h <= gray->height) && (w==h)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
@@ -154,26 +147,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 																										 clippedImage->depth, 
 																										 clippedImage->nChannels);
 							cvResize(clippedImage, resizedImage);
-							//	cvReleaseImage(&clippedImage); done below when I show
-							//the image
-							
-							/*if(w>200){
-								//could display image
-								cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-								//window - put outside loop
-								cvShowImage("WindowName",resizedImage); //display on screen
-								cvWaitKey(0); //wait for key press
-								//remember to releaseImage...
-								cvDestroyWindow("WindowName");//destroying view window - put
-								//outside loop
-							}*/
 					
 							//compute integral image
 							IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
 																														 resizedImage->height+1), 
 																											IPL_DEPTH_32S, 1);
 							cvIntegral(resizedImage, integralImage);
-							//cvReleaseImage(&resizedImage);
 
 							ImageType classifiedImage = OTHER;
 
@@ -186,9 +165,6 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							
 
 							if(tree){
-								//tree->print(
-								//saveState("check.txt");
-								//exit(-1);
 								double percent = 0.0;
 
 								classifiedImage = tree->classify(haarOut, &percent);
@@ -201,11 +177,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 									obj.rect = cvRect(x,y,w,h);
 									obj.label = "mug";
 									
-								
-								
 								}
-
-
 							}
 							delete haarOut;
 							
@@ -213,12 +185,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							cvReleaseImage(&clippedImage);
 							cvReleaseImage(&resizedImage);
 							cvReleaseImage(&integralImage);
-							//exit(-1);
 						}
 					}
-					//cvWaitKey(0);
-					//exit(-1);
-					
 				}
 			}
 		}
@@ -229,26 +197,6 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		return true;
 
-
-/*
-    // Example code which returns up to 10 random objects, each object
-    // having a width and height equal to half the frame size.
-    const char *labels[5] = {
-	"mug", "stapler", "keyboard", "clock", "scissors"
-    }; 
-    int n = cvRandInt(&rng) % 10;
-    while (n-- > 0) {
-        CObject obj;
-        obj.rect = cvRect(0, 0, frame->width / 2, frame->height / 2);
-        obj.rect.x = cvRandInt(&rng) % (frame->width - obj.rect.width);
-        obj.rect.y = cvRandInt(&rng) % (frame->height - obj.rect.height);
-	obj.label = string(labels[cvRandInt(&rng) % 5]);
-	objects->push_back(obj);        
-    }
-
-    return true;
-
-*/
 }
         
 // train
@@ -294,8 +242,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		int c = 0; //my counter to only load a certain amount of images
 		bool flagM = true;
 		bool flagO = true;
-		//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-				//window - put outside loop
+
     for (int i = 0; i < (int)fileList.files.size(); i++) {
 			// show progress
 			if (i % 1000 == 0) {
@@ -307,7 +254,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			(fileList.files[i].label == "other" && flagO)) {
 				
 
-				/*
+				/*  USED FOR LIMITING INPUTS...COMMENTED OUT FOR SUBMISSION
 				if(fileList.files[i].label == "mug" && c > 25){
 					flagM = false;
 				}
@@ -326,7 +273,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 							 << fileList.files[i].filename.c_str() << endl;
 					continue;
 				}
-				//cout << "loaded image" << endl;
+
 				//this checks to see if the channel is 1, if not
 				//it converts it to gray scale
 				//otherwise makes gray point to the same image
@@ -339,6 +286,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					gray = image;
 				}
 
+				//Image display code, not needed for submission
 				//could display image
 				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 				//window - put outside loop
@@ -360,7 +308,6 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				// save image type
 				if(fileList.files[i].label == "mug"){
 					haarOut->type = MUG;
-					//std::cout << "mug" << endl;
 				}
 				else{
 					haarOut->type = OTHER;
@@ -373,7 +320,6 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				haarOutVec.push_back(haarOut);
 
 			  // free memory
-			  //cvReleaseImage(&image); potential memory bug maybe?
 				//releasing gray (if the image was grayscale to begin with this
 			  //should point to the same thing and still work
 				cvReleaseImage(&gray);
@@ -405,7 +351,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			delete haarOutVec[i];
 		/*
 		//=====================================================
-		//we should test our tree here
+		//we test our tree on training data here not needed for submission
 		int	correct =0;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
