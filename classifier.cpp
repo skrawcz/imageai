@@ -58,26 +58,6 @@ CClassifier::~CClassifier()
 bool CClassifier::loadState(const char *filename)
 {
     assert(filename != NULL);
-    
-    /*CXMLParser percy;
-
-		if(!percy.OpenFile(filename))
-			return false;
-
-		CXMLElement element;
-
-		while(!percy.HasFailed()){
-
-			percy.NextElement(&element);
-
-			std::cout << element.mSection << std::endl;
-			//std::cout << element.mValue << std::endl;
-			//std::cout << element.mInstruction << std::endl;
-
-		}
-
-
-    */
 
 		if(tree)
 			delete tree;
@@ -100,7 +80,7 @@ bool CClassifier::loadState(const char *filename)
 
 		tree->setTreeType(treeType);
 
-		saveState("bongo.xml");
+		//saveState("bongo.xml");
 	
     return true;
 }
@@ -142,8 +122,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
-				for (int w = 64; w<=104; w = w+8){
-					for (int h =64 ; h<=104; h = h+8){
+				for (int w = 104; w<=320; w = w+8){
+					for (int h =104 ; h<=240; h = h+8){
 						if( (x+w <= gray->width) && (y+h <= gray->height) ){// && (w==h)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
@@ -215,23 +195,16 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								objects->push_back(obj);
 								
 								//std::cout << "classified image = "<< classifiedImage <<std::endl;
-								
+								/*
 								//could display image
-								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 								//window - put outside loop
-								//cvShowImage("WindowName",resizedImage); //display on screen
-								//cvWaitKey(0); //wait for key press
+								cvShowImage("WindowName",resizedImage); //display on screen
+								cvWaitKey(0); //wait for key press
 								//remember to releaseImage...
-								//cvDestroyWindow("WindowName");//destroying view window - put
+								cvDestroyWindow("WindowName");//destroying view window - put
 								//outside loop
-								//could display image
-								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-								//window - put outside loop
-								//cvShowImage("WindowName",clippedImage); //display on screen
-								//cvWaitKey(0); //wait for key press
-								//remember to releaseImage...
-								//cvDestroyWindow("WindowName");//destroying view window - put
-								//outside loop	
+								*/
 								
 							}else{
 								//CObject obj;
