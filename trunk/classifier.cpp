@@ -142,9 +142,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
-				for (int w = 64; w<=320; w = w+8){
-					for (int h = 64; h<=240; h = h+8){
-						if( (x+w <= gray->width) && (y+h <= gray->height) && (w==h)) {
+				for (int w = 64; w<=104; w = w+8){
+					for (int h =64 ; h<=104; h = h+8){
+						if( (x+w <= gray->width) && (y+h <= gray->height) ){// && (w==h)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
 							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
@@ -152,13 +152,15 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							cvSetImageROI(gray,region);
 							cvCopyImage(gray, clippedImage);
 							cvResetImageROI(gray);
-
+							
+								
 							//scale image to 64x64
 							IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
 																										 clippedImage->depth, 
 																										 clippedImage->nChannels);
 							cvResize(clippedImage, resizedImage);
-							cvReleaseImage(&clippedImage);
+							//	cvReleaseImage(&clippedImage); done below when I show
+							//the image
 							
 							/*if(w>200){
 								//could display image
@@ -186,31 +188,84 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							// save haar features
 							applyHaar(integralImage, haarOut);
 
-							if(tree)
+							if(tree){
+								//tree->print(
+								//saveState("check.txt");
+								//exit(-1);
 								classifiedImage = tree->classify(haarOut);
 
+								//could display image
+								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								//window - put outside loop
+								//cvShowImage("WindowName",resizedImage); //display on screen
+								//cvWaitKey(0); //wait for key press
+								//remember to releaseImage...
+								//cvDestroyWindow("WindowName");//destroying view window - put
+								//outside loop
+								//exit(-1);
+							}
 							delete haarOut;
-
+							
+							
 							//test this image
 							if (classifiedImage == MUG){
 								CObject obj;
 								obj.rect = cvRect(x,y,w,h);
 								obj.label = "MUG";
 								objects->push_back(obj);
-
+								
+								//std::cout << "classified image = "<< classifiedImage <<std::endl;
+								
 								//could display image
-								cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 								//window - put outside loop
-								cvShowImage("WindowName",resizedImage); //display on screen
-								cvWaitKey(0); //wait for key press
+								//cvShowImage("WindowName",resizedImage); //display on screen
+								//cvWaitKey(0); //wait for key press
 								//remember to releaseImage...
-								cvDestroyWindow("WindowName");//destroying view window - put
+								//cvDestroyWindow("WindowName");//destroying view window - put
 								//outside loop
+								//could display image
+								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								//window - put outside loop
+								//cvShowImage("WindowName",clippedImage); //display on screen
+								//cvWaitKey(0); //wait for key press
+								//remember to releaseImage...
+								//cvDestroyWindow("WindowName");//destroying view window - put
+								//outside loop	
+								
+							}else{
+								//CObject obj;
+								//obj.rect = cvRect(x,y,w,h);
+								//obj.label = "Other";
+								//objects->push_back(obj);
+								//cvDestroyWindow("WindowName");//destroying view window - put
+								//outside loop
+								//could display image
+								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+								//window - put outside loop
+								//cvShowImage("WindowName",clippedImage); //display on screen
+								//cvWaitKey(0); //wait for key press
+								//cvShowImage("WindowName",resizedImage);
+								//	cvWaitKey(0);
+								//remember to releaseImage...
+								//cvDestroyWindow("WindowName");
 							}
+							//if(x%16==0 && y%16==0){
+							//	CObject obj;
+							//	obj.rect = cvRect(x,y,w,h);
+							//	obj.label = "";
+							//	objects->push_back(obj);
+							//
+							//}
+							cvReleaseImage(&clippedImage);
 							cvReleaseImage(&resizedImage);
 							cvReleaseImage(&integralImage);
+							//exit(-1);
 						}
 					}
+					//cvWaitKey(0);
+					//exit(-1);
+					
 				}
 			}
 		}
@@ -283,6 +338,8 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		int c = 0; //my counter to only load a certain amount of images
 		bool flagM = true;
 		bool flagO = true;
+		//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+				//window - put outside loop
     for (int i = 0; i < (int)fileList.files.size(); i++) {
 			// show progress
 			if (i % 1000 == 0) {
@@ -293,6 +350,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			if ((fileList.files[i].label == "mug" && flagM) ||
 			(fileList.files[i].label == "other" && flagO)) {
 				
+
 				/*
 				if(fileList.files[i].label == "mug" && c > 25){
 					flagM = false;
@@ -301,10 +359,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					flagO = false;
 				}
 			  c++;//incrementing counter+
-
-				if(c > 100){//if the counter is more then break
-					break;
-				}
+// 				if(c > 100){//if the counter is more then break
+// 					break;
+// 				}
 				*/
 				// load the image
 				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
@@ -325,18 +382,18 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				}else{
 					gray = image;
 				}
-/*
+
 				//could display image
 				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
 				//window - put outside loop
-				//cvShowImage("WindowName",gray); //display on screen
-				//cvWaitKey(0); //wait for key press
+				//	cvShowImage("WindowName",gray); //display on screen
+				//	cvWaitKey(1); //wait for key press
 				//remember to releaseImage...
 				//cvDestroyWindow("WindowName");//destroying view window - put
 				//outside loop
-*/
+
 			  // resize to 64 x 64
-			  cvResize(image, smallImage);
+			  cvResize(gray, smallImage);
 
 				// create integral image
 				cvIntegral(smallImage, integralo);
@@ -345,10 +402,13 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				haarOut = new HaarOutput;
 
 				// save image type
-				if(fileList.files[i].label == "mug")
+				if(fileList.files[i].label == "mug"){
 					haarOut->type = MUG;
-				else
+					//std::cout << "mug" << endl;
+				}
+				else{
 					haarOut->type = OTHER;
+				}
 				
 				// save haar features
 				applyHaar(integralo, haarOut);
@@ -363,7 +423,8 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				cvReleaseImage(&gray);
 			}
     }
-
+		//	cvDestroyWindow("WindowName");//destroying view window - put
+				//outside loop
     // free memory
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
@@ -386,7 +447,83 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		// clear out haar feature data
 		for(unsigned i=0;i<haarOutVec.size();++i)
 			delete haarOutVec[i];
+		/*
+		//=====================================================
+		//we should test our tree here
+		int	correct =0;
+		//grey scale image 
+    smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
+		//integral image
+		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
+		 for (int i = 0; i < (int)fileList.files.size(); i++) {
+			// show progress
+			if (i % 1000 == 0) {
+					showProgress(i, fileList.files.size());
+			}
 
+			// skip non-mug and non-other images (milestone only)
+			if ((fileList.files[i].label == "mug") ||
+			(fileList.files[i].label == "other")) {
+				
+				// load the image
+				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
+				if (image == NULL) {
+					cerr << "ERROR: could not load image "
+							 << fileList.files[i].filename.c_str() << endl;
+					continue;
+				}
+				//std::cout<<"got here1"<< std::endl;
+				if(image->nChannels != 1){
+					//	std::cout <<"image was colour"<<std::endl;
+					gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
+					cvCvtColor(image,gray,CV_BGR2GRAY);
+					//releasing old image as we don't need it now
+					cvReleaseImage(&image);
+
+				}else{
+					//std::cout<<"image was gray"<<std::endl;
+					gray = image;
+				}
+				//std::cout<<"got here2"<< std::endl;
+				
+				 // resize to 64 x 64
+			  cvResize(gray, smallImage);
+				//std::cout<<"got here3"<< std::endl;
+				// create integral image
+				cvIntegral(smallImage, integralo);
+				//std::cout<<"got here4"<< std::endl;
+				//create haarOutput object that contains type and haar values of image
+				haarOut = new HaarOutput;
+
+				// save image type
+				if(fileList.files[i].label == "mug"){
+					haarOut->type = MUG;
+					//std::cout << "mug" << endl;
+				}
+				else{
+					haarOut->type = OTHER;
+				}
+				
+				// save haar features
+				applyHaar(integralo, haarOut);
+				ImageType classifiedImage = OTHER;
+				if(tree){
+					classifiedImage = tree->classify(haarOut);
+				}
+					//test this image
+				if (classifiedImage == haarOut->type){
+					correct++;
+				}
+				delete haarOut;
+				cvReleaseImage(&gray);
+				
+			}
+						
+		 }
+		 cvReleaseImage(&smallImage);
+		 cvReleaseImage(&integralo);
+		 std::cout << "correct = "<< correct << std::endl;*/
+		 //====================================================
     return true;
 }
 
@@ -503,7 +640,7 @@ void CClassifier::applyHaar(const IplImage *im, HaarOutput *haary){
 		
 		out = (z - 2*t)/z;
 		haary->haarVals[i] = fabs(out);
-
+		//std::cout << "haar value = " << fabs(out) << std::endl;
 		++i;
 	}
 

@@ -21,7 +21,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	//std::cout << "in decision tree constructor" << std::endl;
 	if(examples.size() == 0){
 		isLeaf = true;
-		//std::cout << "examples.size == 0 " << std::endl;
+		std::cout << "examples.size == 0 " << std::endl;
 		
 	}
 
@@ -37,7 +37,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	}
 
 	else if(isAttribsEmpty(attribs)){
-		//std::cout << "in the attributes are empty" << std::endl;
+		std::cout << "in the attributes are empty" << std::endl;
 		isLeaf = true;
 		setMajorityValues(examples);
 
@@ -59,7 +59,8 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 			//std::cout << "splitting examples on best feature " << std::endl;
 			while(it != examples.end()){
 						
-				if((*it)->haarVals[attribute] < threshold){
+					if((*it)->haarVals[attribute] <= threshold){
+				//if((*it)->haarVals[attribute] > threshold){
 					below.push_back(*it);
 				}else{
 					above.push_back(*it);
@@ -68,8 +69,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 			}
 			//problem with above and below size
 			//std::cout << "finished splitting examples on best feature " <<std::endl;
-			//std::cout << "size above = " << above.size() << " size below = " <<
-			//	below.size() << std::endl;
+			//std::cout << "size above = " << above.size() << " size below = " <<	below.size() << std::endl;
 
 			attribs.at(attribute) = false;
 	
@@ -345,8 +345,10 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 }
 
 CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary){
-
+	
+	//std::cout << "in classify"<< std::endl;
 	if(!isLeaf){
+		//if(haary->haarVals[attribute] > threshold){
 		if(haary->haarVals[attribute] <= threshold){
 
 			return children.at(0)->classify(haary);
@@ -357,6 +359,8 @@ CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary){
 
 		}
 	}else{
+		//std::cout << "majority percent = "<<majorityPercent;
+		//std::cout << " majority type = "<<majorityType << std::endl;
 		return majorityType;
 	}
 
@@ -395,10 +399,14 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 	// find the most common types percentage and save it.
 	if(max != 0)
 		majorityPercent = float(max) / float(positive + negative);
+	else
+		majorityPercent = 0.0;
 
 	if(max == positive)
 		majorityType = treeType;
-
+	
+	//if (majorityPercent >= 0.5)
+	//	majorityType = treeType;
 	else
 		majorityType = CClassifier::OTHER;
 
