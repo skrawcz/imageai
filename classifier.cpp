@@ -122,6 +122,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 
 		HaarOutput *haarOut;
+		CObject obj;
 /*
 		//could display image
 		cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
@@ -132,6 +133,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		cvDestroyWindow("WindowName");//destroying view window - put
 		//outside loop
 */
+		double highestPercent = 0.01;
+
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
 				for (int w = 104; w<=320; w = w+8){
@@ -191,13 +194,13 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								classifiedImage = tree->classify(haarOut, &percent);
 
 								//test this image
-								if (classifiedImage == MUG && percent > .9){
-				
-
-									CObject obj;
+								if (classifiedImage == MUG && percent > highestPercent){
+						
+									highestPercent = percent;
+									
 									obj.rect = cvRect(x,y,w,h);
 									obj.label = "mug";
-									objects->push_back(obj);
+									
 								
 								
 								}
@@ -220,6 +223,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			}
 		}
 		cvReleaseImage(&gray);
+
+		if(highestPercent > .9)
+			objects->push_back(obj);
 
 		return true;
 
