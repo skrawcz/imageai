@@ -49,7 +49,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	
 		setMajorityValues(examples);
 
-		if(infogain == 0){
+		if(infogain <= 10){
 			isLeaf = true;
 		}else{
 		
@@ -290,7 +290,6 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 			tempInfoGain = ml1 - mlpUp1 - mlpDwn1;
 			
 			if ( tempInfoGain > maxInfoGain){
-				//std::cout <<"Reset max info gain" << std::endl;
 				maxInfoGain = tempInfoGain;
 				maxThr = thr;
 				maxAttr = attr;

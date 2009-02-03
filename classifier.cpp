@@ -122,9 +122,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		for (int x = 0; x <=320; x = x+8){
 			for (int y = 0; y<=240; y = y+8){
-				for (int w = 104; w<=320; w = w+8){
-					for (int h =104 ; h<=240; h = h+8){
-						if( (x+w <= gray->width) && (y+h <= gray->height) ){// && (w==h)) {
+				for (int w = 64; w<=320; w = w+8){
+					for (int h = 64 ; h<=240; h = h+8){
+						if( (x+w <= gray->width) && (y+h <= gray->height) && (w==h)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
 							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
@@ -191,7 +191,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							if (classifiedImage == MUG){
 								CObject obj;
 								obj.rect = cvRect(x,y,w,h);
-								obj.label = "MUG";
+								obj.label = "mug";
 								objects->push_back(obj);
 								
 								//std::cout << "classified image = "<< classifiedImage <<std::endl;
@@ -332,10 +332,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					flagO = false;
 				}
 			  c++;//incrementing counter+
-// 				if(c > 100){//if the counter is more then break
-// 					break;
-// 				}
-				*/
+ 				if(c > 100){//if the counter is more then break
+ 					break;
+ 				}*/
+				
 				// load the image
 				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
 				if (image == NULL) {
