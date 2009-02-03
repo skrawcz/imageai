@@ -49,7 +49,7 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 	
 		setMajorityValues(examples);
 
-		if(infogain <= 10){
+		if(infogain <= 20){
 			isLeaf = true;
 		}else{
 		
