@@ -180,68 +180,33 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							// save haar features
 							applyHaar(integralImage, haarOut);
 
+							
+
 							if(tree){
 								//tree->print(
 								//saveState("check.txt");
 								//exit(-1);
-								classifiedImage = tree->classify(haarOut);
+								double percent = 0.0;
 
-								//could display image
-								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-								//window - put outside loop
-								//cvShowImage("WindowName",resizedImage); //display on screen
-								//cvWaitKey(0); //wait for key press
-								//remember to releaseImage...
-								//cvDestroyWindow("WindowName");//destroying view window - put
-								//outside loop
-								//exit(-1);
+								classifiedImage = tree->classify(haarOut, &percent);
+
+								//test this image
+								if (classifiedImage == MUG && percent > .9){
+				
+
+									CObject obj;
+									obj.rect = cvRect(x,y,w,h);
+									obj.label = "mug";
+									objects->push_back(obj);
+								
+								
+								}
+
+
 							}
 							delete haarOut;
 							
-							
-							//test this image
-							if (classifiedImage == MUG){
-								CObject obj;
-								obj.rect = cvRect(x,y,w,h);
-								obj.label = "mug";
-								objects->push_back(obj);
-								
-								//std::cout << "classified image = "<< classifiedImage <<std::endl;
-								/*
-								//could display image
-								cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-								//window - put outside loop
-								cvShowImage("WindowName",resizedImage); //display on screen
-								cvWaitKey(0); //wait for key press
-								//remember to releaseImage...
-								cvDestroyWindow("WindowName");//destroying view window - put
-								//outside loop
-								*/
-								
-							}else {
-								//CObject obj;
-								//obj.rect = cvRect(x,y,w,h);
-								//obj.label = "Other";
-								//objects->push_back(obj);
-								//cvDestroyWindow("WindowName");//destroying view window - put
-								//outside loop
-								//could display image
-								//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-								//window - put outside loop
-								//cvShowImage("WindowName",clippedImage); //display on screen
-								//cvWaitKey(0); //wait for key press
-								//cvShowImage("WindowName",resizedImage);
-								//	cvWaitKey(0);
-								//remember to releaseImage...
-								//cvDestroyWindow("WindowName");
-							}
-							//if(x%16==0 && y%16==0){
-							//	CObject obj;
-							//	obj.rect = cvRect(x,y,w,h);
-							//	obj.label = "";
-							//	objects->push_back(obj);
-							//
-							//}
+
 							cvReleaseImage(&clippedImage);
 							cvReleaseImage(&resizedImage);
 							cvReleaseImage(&integralImage);
@@ -426,7 +391,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		if(tree != NULL)
 			delete tree;
 		cout << "making tree"<<endl;
-		tree = new DecisionTree(haarOutVec, attribs, -1, CClassifier::OTHER);
+		tree = new DecisionTree(haarOutVec, attribs, -1, CClassifier::OTHER, 0);
 		cout << "finished with tree" << endl;
 		
 		// clear out haar feature data
