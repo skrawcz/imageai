@@ -34,7 +34,7 @@ TTrainingFileList getTrainingFiles(const char *root, const char *ext)
     struct dirent *rootEntry;
 
 		if(root == NULL){
-			directory = string("/afs/ir/class/cs221/vision/data/");
+			directory = string("/afs/ir/class/cs221/vision/data/vision_all");
 		}else{
 			directory = string(root);
 		}
