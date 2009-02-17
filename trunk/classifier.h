@@ -25,8 +25,7 @@
 
 #include "utils.h"
 #include "objects.h"
-
-#define HAARAMOUNT 57
+#include "features.h"
 
 class Classer;
 
@@ -56,36 +55,8 @@ public:
     // train the classifier using given set of files
     virtual bool train(TTrainingFileList&);
 
-		enum HaarType{
-			hH, hV, hD, hTL, hTR, hBL, hBR
-		};
-
-		enum ImageType{
-			MUG, SCISSORS, STAPLER, CLOCK, KEYBOARD, OTHER
-		};
-
-		struct HaarFeature{
-			int x,y,w,h;
-			HaarType t;
-		};
-
-		struct HaarOutput{
-			ImageType type;
-			double haarVals[HAARAMOUNT];
-		};
-
 private:
-    // CS221 TO DO: ADD YOUR MEMBER FUNCTIONS HERE
-
-		
-
-		std::vector<HaarFeature> haars;
 		Classer *tree;
-
-		HaarFeature strToHaar(const std::string &in);
-		void readHaars();
-		void applyHaar(const IplImage *im, HaarOutput *haary);
-
-
+    Features *featureSet;
 };
 

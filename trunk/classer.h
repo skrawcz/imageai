@@ -14,19 +14,19 @@ class Classer{
 
 public:
 
-	static Classer * create(const std::vector<CClassifier::HaarOutput*> &examples);
+	static Classer * create(const std::vector<Features::HaarOutput*> &examples);
 
 	static Classer * createFromXML(const char* filename);
 
 	virtual void printToXML(std::ofstream &out, int level) = 0;
-	virtual CClassifier::ImageType classify(CClassifier::HaarOutput *haary, double *percent) = 0;
+	virtual Features::ImageType classify(Features::HaarOutput *haary, double *percent) = 0;
 
 	virtual ~Classer() {};
 
 
 	// set get the type of tree
-	static void setTreeType(CClassifier::ImageType t) { treeType = t; }
-	CClassifier::ImageType getTreeType() { return treeType; }
+	static void setTreeType(Features::ImageType t) { treeType = t; }
+	Features::ImageType getTreeType() { return treeType; }
 
 
 protected:
@@ -40,7 +40,7 @@ protected:
 	// can only be created by its children
 	Classer() {};
 	
-	static CClassifier::ImageType treeType;
+	static Features::ImageType treeType;
 
 };
 

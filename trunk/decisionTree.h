@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "classifier.h"
+#include "features.h"
 #include "classer.h"
+
 
 
 #define THRESHOLDVALS 9
@@ -18,35 +20,33 @@ class DecisionTree : public Classer{
 public:
 
 	// just create
-	DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
-							 float percent, CClassifier::ImageType type, int depth);
+	DecisionTree(std::vector<Features::HaarOutput*> examples, std::vector<bool> attribs, 
+							 float percent,Features::ImageType type, int depth);
 
 	// create from xml file
 	DecisionTree(std::ifstream &in, bool isNode);
 
 	~DecisionTree();
 
-	CClassifier::ImageType classify(CClassifier::HaarOutput *haary, double *percent);
+	Features::ImageType classify(Features::HaarOutput *haary, double *percent);
 
 	void printToXML(std::ofstream &out, int level);
 
-	double chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
+	double chooseAttribute(const std::vector<Features::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
-	
-	
 
 private:
 
-	bool sameClassification(const std::vector<CClassifier::HaarOutput*> &examples);
+	bool sameClassification(const std::vector<Features::HaarOutput*> &examples);
 	bool isAttribsEmpty(const std::vector<bool> &attribs);
-	void setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples);
+	void setMajorityValues(const std::vector<Features::HaarOutput*> &examples);
 	long double EntropyFunc(long double p);
 
 
 	std::vector<DecisionTree*> children;
 
 	float majorityPercent;
-	CClassifier::ImageType majorityType;
+	Features::ImageType majorityType;
 	bool isLeaf;
 	int attribute;
 	double threshold;
