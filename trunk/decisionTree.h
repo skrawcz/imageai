@@ -6,11 +6,9 @@
 #include <fstream>
 #include <vector>
 
-#include "classifier.h"
-#include "features.h"
 #include "classer.h"
 
-
+class Features;
 
 #define THRESHOLDVALS 9
 

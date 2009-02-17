@@ -6,8 +6,7 @@
 #include <fstream>
 #include <vector>
 
-
-#include "classifier.h"
+#include "features.h"
 
 class Classer{
 

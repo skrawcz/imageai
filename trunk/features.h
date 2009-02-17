@@ -2,12 +2,9 @@
 #define FEATURES_H
 
 #include "cv.h"
-#include "cxcore.h"
-#include "highgui.h"
-#include "utils.h"
-#include "objects.h"
-#include <iostream>
 
+#include <iostream>
+#include <vector>
 #define HAARAMOUNT 57
 
 class Features{
@@ -20,6 +17,7 @@ public:
     hH, hV, hD, hTL, hTR, hBL, hBR
   };
 
+	// make very sure other is last!
   enum ImageType{
 	  MUG, SCISSORS, STAPLER, CLOCK, KEYBOARD, OTHER
   };
@@ -35,6 +33,47 @@ public:
   };
 
   void getHaarFeatures(const IplImage *im, HaarOutput *haary);
+
+
+	static ImageType stringToImageType(const std::string &val){
+
+		if(val == "other"){
+			return OTHER;
+		}else if(val == "mug"){
+			return MUG;
+		}else if(val == "scissors"){
+			return SCISSORS;
+		}else if(val == "stapler"){
+			return STAPLER;
+		}else if(val == "clock"){
+			return CLOCK;
+		}else if(val == "keyboard"){
+			return KEYBOARD;
+		}
+
+		return OTHER;
+
+	}
+
+	static std::string imageTypeToString(ImageType val){
+
+		std::string out = "other";
+
+		if(val == MUG){
+			out = "mug";
+		}else if(val == SCISSORS){
+			out = "scissors";
+		}else if(val == STAPLER){
+			out = "stapler";
+		}else if(val == CLOCK){
+			out = "clock";
+		}else if(val == KEYBOARD){
+			out = "keyboard";
+		}
+
+		return out;
+
+	}
 
 private:
   std::vector<HaarFeature> haars; 

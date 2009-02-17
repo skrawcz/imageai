@@ -1,3 +1,5 @@
+#include "features.h"
+
 #include "decisionTree.h"
 #include <math.h>
 #include <stdlib.h>

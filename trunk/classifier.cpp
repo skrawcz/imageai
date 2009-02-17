@@ -25,7 +25,6 @@
 
 #include <math.h>
 
-using namespace std;
 
 // CClassifier class ---------------------------------------------------------
 
@@ -85,7 +84,7 @@ bool CClassifier::saveState(const char *filename)
 			return false;
 
 		
-		ofstream ofs ( filename );
+		std::ofstream ofs ( filename );
 
 		
 		tree->printToXML(ofs, 0);
@@ -158,12 +157,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								classifiedImage = tree->classify(haarOut, &percent);
 
 								//test this image
-								if (classifiedImage == Features::MUG && percent > highestPercent){
+								if (classifiedImage != Features::OTHER && percent > highestPercent){
 						
 									highestPercent = percent;
 									
 									obj.rect = cvRect(x,y,w,h);
-									obj.label = "mug";
+									obj.label = Features::imageTypeToString(classifiedImage);
 									
 								}
 							}
@@ -180,7 +179,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		}
 		cvReleaseImage(&gray);
 
-		if(highestPercent > .9)
+		//if(highestPercent > .9)
 			objects->push_back(obj);
 
 		return true;
@@ -206,7 +205,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 		std::vector<Features::HaarOutput*> haarOutVec;
 
-    cout << "Processing images..." << endl;
+    std::cout << "Processing images..." << std::endl;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
@@ -221,82 +220,73 @@ bool CClassifier::train(TTrainingFileList& fileList)
 					showProgress(i, fileList.files.size());
 			}
 
-			// skip non-mug and non-other images (milestone only)
-			if ((fileList.files[i].label == "mug" && flagM) ||
-			(fileList.files[i].label == "other" && flagO)) {
-				
-
-				/*  USED FOR LIMITING INPUTS...COMMENTED OUT FOR SUBMISSION
-				if(fileList.files[i].label == "mug" && c > 25){
-					flagM = false;
-				}
-				if(fileList.files[i].label == "other" && c > 50){
-					flagO = false;
-				}
-			  c++;//incrementing counter+
- 				if(c > 100){//if the counter is more then break
- 					break;
- 				}*/
-				
-				// load the image
-				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
-				if (image == NULL) {
-					cerr << "ERROR: could not load image "
-							 << fileList.files[i].filename.c_str() << endl;
-					continue;
-				}
-
-				//this checks to see if the channel is 1, if not
-				//it converts it to gray scale
-				//otherwise makes gray point to the same image
-				if(image->nChannels != 1){
-					gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
-					cvCvtColor(image,gray,CV_BGR2GRAY);
-					//releasing old image as we don't need it now
-					cvReleaseImage(&image);
-				}else{
-					gray = image;
-				}
-
-				//Image display code, not needed for submission
-				//could display image
-				//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-				//window - put outside loop
-				//	cvShowImage("WindowName",gray); //display on screen
-				//	cvWaitKey(1); //wait for key press
-				//remember to releaseImage...
-				//cvDestroyWindow("WindowName");//destroying view window - put
-				//outside loop
-
-			  // resize to 64 x 64
-			  cvResize(gray, smallImage);
-
-				// create integral image
-				cvIntegral(smallImage, integralo);
-				
-				//create haarOutput object that contains type and haar values of image
-				haarOut = new Features::HaarOutput;
-
-				// save image type
-				if(fileList.files[i].label == "mug"){
-					haarOut->type = Features::MUG;
-				}
-				else{
-					haarOut->type = Features::OTHER;
-				}
-				
-				// save haar features
-				//applyHaar(integralo, haarOut);
-        featureSet->getHaarFeatures(integralo, haarOut);			
-
-				// add to struct of features.
-				haarOutVec.push_back(haarOut);
-
-			  // free memory
-				//releasing gray (if the image was grayscale to begin with this
-			  //should point to the same thing and still work
-				cvReleaseImage(&gray);
+			/*  USED FOR LIMITING INPUTS...COMMENTED OUT FOR SUBMISSION
+			if(fileList.files[i].label == "mug" && c > 25){
+				flagM = false;
 			}
+			if(fileList.files[i].label == "other" && c > 50){
+				flagO = false;
+			}
+		  c++;//incrementing counter+
+			if(c > 100){//if the counter is more then break
+				break;
+			}*/
+			
+			// load the image
+			image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
+			if (image == NULL) {
+				std::cerr << "ERROR: could not load image "
+						 << fileList.files[i].filename.c_str() << std::endl;
+				continue;
+			}
+
+			//this checks to see if the channel is 1, if not
+			//it converts it to gray scale
+			//otherwise makes gray point to the same image
+			if(image->nChannels != 1){
+				gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
+				cvCvtColor(image,gray,CV_BGR2GRAY);
+				//releasing old image as we don't need it now
+				cvReleaseImage(&image);
+			}else{
+				gray = image;
+			}
+
+			//Image display code, not needed for submission
+			//could display image
+			//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
+			//window - put outside loop
+			//	cvShowImage("WindowName",gray); //display on screen
+			//	cvWaitKey(1); //wait for key press
+			//remember to releaseImage...
+			//cvDestroyWindow("WindowName");//destroying view window - put
+			//outside loop
+
+		  // resize to 64 x 64
+		  cvResize(gray, smallImage);
+
+			// create integral image
+			cvIntegral(smallImage, integralo);
+			
+			//create haarOutput object that contains type and haar values of image
+			haarOut = new Features::HaarOutput;
+
+			// save image type
+			haarOut->type = Features::stringToImageType(fileList.files[i].label);
+			
+			
+			// save haar features
+			//applyHaar(integralo, haarOut);
+      featureSet->getHaarFeatures(integralo, haarOut);			
+
+			// add to struct of features.
+			haarOutVec.push_back(haarOut);
+
+		  // free memory
+			//releasing gray (if the image was grayscale to begin with this
+		  //should point to the same thing and still work
+			cvReleaseImage(&gray);
+
     }
 		//	cvDestroyWindow("WindowName");//destroying view window - put
 				//outside loop
@@ -304,14 +294,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
 
-    cout << endl;
+    std::cout << std::endl;
 
 		if(tree != NULL)
 			delete tree;
 
-		cout << "making tree"<<endl;
+		std::cout << "making tree"<<std::endl;
 		tree = Classer::create(haarOutVec);
-		cout << "finished with tree" << endl;
+		std::cout << "finished with tree" << std::endl;
 		
 		// clear out haar feature data
 		for(unsigned i=0;i<haarOutVec.size();++i)
