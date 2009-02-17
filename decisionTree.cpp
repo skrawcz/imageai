@@ -7,9 +7,8 @@
 #include "highgui.h"
 
 
-
-DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
-													 float percent, CClassifier::ImageType type, int depth) 
+DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vector<bool> attribs, 
+													 float percent, Features::ImageType type, int depth) 
 
 : Classer(),
 	majorityPercent(percent) , 
@@ -52,8 +51,8 @@ DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::
 			isLeaf = true;
 		}else{
 		
-			std::vector<CClassifier::HaarOutput*>::iterator it = examples.begin();
-			std::vector<CClassifier::HaarOutput*> above, below;
+			std::vector<Features::HaarOutput*>::iterator it = examples.begin();
+			std::vector<Features::HaarOutput*> above, below;
 	
 			//splitting examples on best feature 
 			while(it != examples.end()){
@@ -123,7 +122,7 @@ DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 
 		// extract values  atoi and atof turn them into numbers
 		CXMLParser::getNextValue(in, current);
-		majorityType = (CClassifier::ImageType)atoi(current.c_str());
+		majorityType = (Features::ImageType)atoi(current.c_str());
 
 		CXMLParser::getNextValue(in, current);
 		majorityPercent = atof(current.c_str());
@@ -169,7 +168,7 @@ void DecisionTree::printToXML(std::ofstream &out, int level){
 }
 
 double DecisionTree::chooseAttribute(const
-std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
+std::vector<Features::HaarOutput*> &examples,const std::vector<bool>
 &attribs, int &bestAttribute, double &bestThreshold){
 
 		
@@ -189,7 +188,7 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 		}
 		
 		//start iterator
-		std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
+		std::vector<Features::HaarOutput*>::const_iterator it = examples.begin();
 
 		//increment counts for each 
 		while(it != examples.end()){
@@ -286,9 +285,9 @@ std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool>
 	return maxInfoGain;
 }
 
-bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*> &examples){
+bool DecisionTree::sameClassification(const std::vector<Features::HaarOutput*> &examples){
 
-	std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
+	std::vector<Features::HaarOutput*>::const_iterator it = examples.begin();
 
 	// check if first one is treetype or not
 	bool isNotTreeType = ((*it)->type != treeType);
@@ -322,7 +321,7 @@ bool DecisionTree::sameClassification(const std::vector<CClassifier::HaarOutput*
 
 }
 
-CClassifier::ImageType DecisionTree::classify(CClassifier::HaarOutput *haary, double *percent){
+Features::ImageType DecisionTree::classify(Features::HaarOutput *haary, double *percent){
 	
 	if(!isLeaf){
 		if(haary->haarVals[attribute] <= threshold){
@@ -353,11 +352,11 @@ bool DecisionTree::isAttribsEmpty(const std::vector<bool> &attribs){
 
 }
 
-void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*> &examples){
+void DecisionTree::setMajorityValues(const std::vector<Features::HaarOutput*> &examples){
 
 	int positive = 0, negative = 0;
 
-	std::vector<CClassifier::HaarOutput*>::const_iterator it = examples.begin();
+	std::vector<Features::HaarOutput*>::const_iterator it = examples.begin();
 
 	// find the amount of the sought type versus the other types
 	while(it != examples.end()){
@@ -382,7 +381,7 @@ void DecisionTree::setMajorityValues(const std::vector<CClassifier::HaarOutput*>
 	if(max == positive)
 		majorityType = treeType;
 	else
-		majorityType = CClassifier::OTHER;
+		majorityType = Features::OTHER;
 
 
 }

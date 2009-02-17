@@ -7,9 +7,9 @@
 #include <fstream>
 #include <sstream>
 
-CClassifier::ImageType Classer::treeType = CClassifier::OTHER;
+Features::ImageType Classer::treeType = Features::MUG;
 
-Classer * Classer::create(const std::vector<CClassifier::HaarOutput*> &examples){
+Classer * Classer::create(const std::vector<Features::HaarOutput*> &examples){
 
 	// should come from config file
 	std::string type("SingleDecisionTree");
@@ -21,7 +21,7 @@ Classer * Classer::create(const std::vector<CClassifier::HaarOutput*> &examples)
 		attribs.push_back(true);
 
 	//if(type == "SingleDecisionTree")
-	return new DecisionTree(examples, attribs, -1, CClassifier::OTHER, 0);
+	return new DecisionTree(examples, attribs, -1, Features::OTHER, 0);
 
 
 }
@@ -34,7 +34,7 @@ Classer * Classer::createFromXML(const char* filename){
 
 	// figure out what type of things the tree classifies
 	CXMLParser::getNextValue(ifs, current);
-	CClassifier::ImageType treeType = (CClassifier::ImageType)atoi(current.c_str());
+	Features::ImageType treeType = (Features::ImageType)atoi(current.c_str());
 	getline(ifs, current);
 
 	Classer::treeType = treeType;
