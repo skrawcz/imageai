@@ -156,11 +156,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 								classifiedImage = tree->classify(haarOut, &percent);
 
+								
 								//test this image
 								if (classifiedImage != Features::OTHER && percent > highestPercent){
 						
 									highestPercent = percent;
-									
+									std::cout << classifiedImage << std::endl;
 									obj.rect = cvRect(x,y,w,h);
 									obj.label = Features::imageTypeToString(classifiedImage);
 									

@@ -32,7 +32,11 @@ DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vec
 		
 		// value something like 100 % of something :S
 		majorityPercent = 1;
-		majorityType = examples.at(0)->type;
+
+		if(examples.at(0)->type == treeType)
+			majorityType = treeType;
+		else
+			majorityType = Features::OTHER;
 
 
 	}
@@ -336,6 +340,9 @@ Features::ImageType DecisionTree::classify(Features::HaarOutput *haary, double *
 
 		}
 	}else{
+		if(majorityType == treeType)
+			std::cout << majorityPercent << std::endl;
+
 		*percent = majorityPercent;
 
 		return majorityType;
