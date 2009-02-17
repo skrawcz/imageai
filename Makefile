@@ -17,8 +17,8 @@
 include Make.defaults
 
 PROGS = test train evaluate
-HDR = objects.h classifier.h replay.h utils.h CXMLParser.h decisionTree.h features.h classer.h
-SRC = objects.cpp classifier.cpp replay.cpp utils.cpp CXMLParser.cpp decisionTree.cpp features.cpp classer.cpp
+HDR = objects.h classifier.h replay.h utils.h CXMLParser.h decisionTree.h features.h classer.h multipleDecisionTree.h
+SRC = objects.cpp classifier.cpp replay.cpp utils.cpp CXMLParser.cpp decisionTree.cpp features.cpp classer.cpp multipleDecisionTree.cpp
 
 #MORE_LIBS=-ltiff -lpthread -lpng -lm
 #GTK_LIBS=$(shell pkg-config gtk+ --libs)

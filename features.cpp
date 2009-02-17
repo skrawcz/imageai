@@ -1,10 +1,9 @@
+#include "features.h"
+
 #include <cassert>
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <string>
-#include <algorithm>
-#include "features.h"
+#include <fstream>
 #include <math.h>
 
 Features::Features(){
