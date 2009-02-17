@@ -19,11 +19,10 @@
 #include "cv.h"
 #include "cxcore.h"
 #include "highgui.h"
-#include "decisionTree.h"
+#include "classer.h"
 
 #include "classifier.h"
 
-#include "CXMLParser.h"
 #include <math.h>
 
 using namespace std;
@@ -57,6 +56,7 @@ CClassifier::~CClassifier()
 // Configure the classifier from the given file.
 bool CClassifier::loadState(const char *filename)
 {
+
     assert(filename != NULL);
 
 		readHaars();
@@ -64,26 +64,10 @@ bool CClassifier::loadState(const char *filename)
 		if(tree)
 			delete tree;
 
-		ifstream ifs ( filename, ifstream::in );
-
-		std::string current;
-
-		// figure out what type of things the tree classifies
-		CXMLParser::getNextValue(ifs, current);
-
-		CClassifier::ImageType treeType = (CClassifier::ImageType)atoi(current.c_str());
-
-		getline(ifs, current);
-
-		if(current.find("node") != std::string::npos)
-			tree = new DecisionTree(ifs, true);
-		else
-			tree = new DecisionTree(ifs, false);
-
-		tree->setTreeType(treeType);
+		tree = Classer::createFromXML(filename);
 
 		//saveState("bongo.xml");
-	
+
     return true;
 }
 
@@ -99,8 +83,8 @@ bool CClassifier::saveState(const char *filename)
 		
 		ofstream ofs ( filename );
 
-		ofs << "<treeType>" << tree->getTreeType() << "</treeType>\n";
-		tree->print(ofs, 0);
+		
+		tree->printToXML(ofs, 0);
 
     ofs.close();
     return true;
@@ -111,9 +95,8 @@ bool CClassifier::saveState(const char *filename)
 // objects found (and their location).
 bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 {
-    assert((frame != NULL) && (objects != NULL));
-    
-    // CS221 TO DO: replace this with your own code
+
+		assert((frame != NULL) && (objects != NULL));
 
 		//convert to gray scale
 		IplImage *gray;
@@ -204,23 +187,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 // training file list.
 bool CClassifier::train(TTrainingFileList& fileList)
 {
-    // CS221 TO DO: replace with your own training code
 
-    // example code to show you number of samples for each object class
-    cout << "Classes:" << endl;
-    for (int i = 0; i < (int)fileList.classes.size(); i++) {
-			
-			cout << fileList.classes[i] << " (";
-			int count = 0;
-
-			for (int j = 0; j < (int)fileList.files.size(); j++) {
-	    	if (fileList.files[j].label == fileList.classes[i]) {
-					count += 1;
-	    	}
-			}
-			cout << count << " samples)" << endl;
-    }
-    cout << endl;
 
 
 		// create haars
@@ -239,7 +206,6 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		//integral image
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
-		int c = 0; //my counter to only load a certain amount of images
 		bool flagM = true;
 		bool flagO = true;
 
@@ -333,99 +299,17 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     cout << endl;
 
-		// create a vector of attributes, ie the different haar features.
-		std::vector<bool> attribs;
-
-		for(unsigned i=0;i<HAARAMOUNT;++i)
-			attribs.push_back(true);
-
-
 		if(tree != NULL)
 			delete tree;
+
 		cout << "making tree"<<endl;
-		tree = new DecisionTree(haarOutVec, attribs, -1, CClassifier::OTHER, 0);
+		tree = Classer::create(haarOutVec);
 		cout << "finished with tree" << endl;
 		
 		// clear out haar feature data
 		for(unsigned i=0;i<haarOutVec.size();++i)
 			delete haarOutVec[i];
-		/*
-		//=====================================================
-		//we test our tree on training data here not needed for submission
-		int	correct =0;
-		//grey scale image 
-    smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
-		//integral image
-		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
-		 for (int i = 0; i < (int)fileList.files.size(); i++) {
-			// show progress
-			if (i % 1000 == 0) {
-					showProgress(i, fileList.files.size());
-			}
 
-			// skip non-mug and non-other images (milestone only)
-			if ((fileList.files[i].label == "mug") ||
-			(fileList.files[i].label == "other")) {
-				
-				// load the image
-				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
-				if (image == NULL) {
-					cerr << "ERROR: could not load image "
-							 << fileList.files[i].filename.c_str() << endl;
-					continue;
-				}
-				//std::cout<<"got here1"<< std::endl;
-				if(image->nChannels != 1){
-					//	std::cout <<"image was colour"<<std::endl;
-					gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
-					cvCvtColor(image,gray,CV_BGR2GRAY);
-					//releasing old image as we don't need it now
-					cvReleaseImage(&image);
-
-				}else{
-					//std::cout<<"image was gray"<<std::endl;
-					gray = image;
-				}
-				//std::cout<<"got here2"<< std::endl;
-				
-				 // resize to 64 x 64
-			  cvResize(gray, smallImage);
-				//std::cout<<"got here3"<< std::endl;
-				// create integral image
-				cvIntegral(smallImage, integralo);
-				//std::cout<<"got here4"<< std::endl;
-				//create haarOutput object that contains type and haar values of image
-				haarOut = new HaarOutput;
-
-				// save image type
-				if(fileList.files[i].label == "mug"){
-					haarOut->type = MUG;
-					//std::cout << "mug" << endl;
-				}
-				else{
-					haarOut->type = OTHER;
-				}
-				
-				// save haar features
-				applyHaar(integralo, haarOut);
-				ImageType classifiedImage = OTHER;
-				if(tree){
-					classifiedImage = tree->classify(haarOut);
-				}
-					//test this image
-				if (classifiedImage == haarOut->type){
-					correct++;
-				}
-				delete haarOut;
-				cvReleaseImage(&gray);
-				
-			}
-						
-		 }
-		 cvReleaseImage(&smallImage);
-		 cvReleaseImage(&integralo);
-		 std::cout << "correct = "<< correct << std::endl;*/
-		 //====================================================
     return true;
 }
 

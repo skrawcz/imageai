@@ -7,10 +7,12 @@
 #include <vector>
 
 #include "classifier.h"
+#include "classer.h"
+
 
 #define THRESHOLDVALS 9
 
-class DecisionTree{
+class DecisionTree : public Classer{
 
 
 public:
@@ -26,12 +28,12 @@ public:
 
 	CClassifier::ImageType classify(CClassifier::HaarOutput *haary, double *percent);
 
-	void print(std::ofstream &out, int level);
+	void printToXML(std::ofstream &out, int level);
 
 	double chooseAttribute(const std::vector<CClassifier::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
-	static void setTreeType(CClassifier::ImageType t) { treeType = t; }
-	CClassifier::ImageType getTreeType() { return treeType; }
+	
+	
 
 private:
 
@@ -49,8 +51,6 @@ private:
 	int attribute;
 	double threshold;
 	
-
-	static CClassifier::ImageType treeType;
 
 };
 

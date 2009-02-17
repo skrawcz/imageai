@@ -28,7 +28,7 @@
 
 #define HAARAMOUNT 57
 
-class DecisionTree;
+class Classer;
 
 /* CClassifier class ---------------------------------------------------------
  */
@@ -80,7 +80,7 @@ private:
 		
 
 		std::vector<HaarFeature> haars;
-		DecisionTree *tree;
+		Classer *tree;
 
 		HaarFeature strToHaar(const std::string &in);
 		void readHaars();
