@@ -1,5 +1,3 @@
-
-
 #include "decisionTree.h"
 #include <math.h>
 #include <stdlib.h>
@@ -8,12 +6,13 @@
 #include "CXMLParser.h"
 #include "highgui.h"
 
-CClassifier::ImageType DecisionTree::treeType = CClassifier::MUG;
+
 
 DecisionTree::DecisionTree(std::vector<CClassifier::HaarOutput*> examples, std::vector<bool> attribs, 
 													 float percent, CClassifier::ImageType type, int depth) 
 
-: majorityPercent(percent) , 
+: Classer(),
+	majorityPercent(percent) , 
 	majorityType(type),
 	isLeaf(false)
 
@@ -141,7 +140,10 @@ DecisionTree::~DecisionTree(){
 
 
 }
-void DecisionTree::print(std::ofstream &out, int level){
+void DecisionTree::printToXML(std::ofstream &out, int level){
+
+	if(level == 0) 
+		printTypeData(out);
 
 	std::string tabStr;
 
@@ -159,7 +161,7 @@ void DecisionTree::print(std::ofstream &out, int level){
 		out << tabStr << "\t<threshold>" << threshold << "</threshold>\n";
 	
 		for(unsigned i=0;i<children.size();++i)
-				children[i]->print(out, level + 1);
+				children[i]->printToXML(out, level + 1);
 
 		out << tabStr << "</node>\n";
 	}
