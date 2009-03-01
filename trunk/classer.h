@@ -13,33 +13,42 @@ class Classer{
 
 public:
 
-	static Classer * create(const std::vector<Features::HaarOutput*> &examples);
-
+	static Classer * create(const std::vector<Features::HaarOutput*> &examples, Features::ImageType t = Features::MUG);
 	static Classer * createFromXML(const char* filename);
+	static bool printToXML(const char *filename, Classer *t);
 
-	virtual void printToXML(std::ofstream &out, int level) = 0;
-	virtual Features::ImageType classify(Features::HaarOutput *haary, double *percent) = 0;
+
+	virtual Features::ImageType classify(Features::HaarOutput *haary, double &percent) = 0;
 
 	virtual ~Classer() {};
 
+	enum ClassifierType{
+		SINGLE,
+		MULTIPLE,
+		BOOST
+	};
 
-	// set get the type of tree
-	static void setTreeType(Features::ImageType t) { treeType = t; }
-	Features::ImageType getTreeType() { return treeType; }
 
 
 protected:
 
-	// in future should print things like if boosted tree etc.
-	void printTypeData(std::ofstream &out){
+	virtual void print(std::ofstream &out, int level) = 0;
 
-		out << "<treeType>" << treeType << "</treeType>\n";
+	// in future should print things like if boosted tree etc.
+	void printGeneralInfo(std::ofstream &out){
+
+		out << "<classifierType>" << classifierType << "</classifierType>\n";
 	};
+
+	static ClassifierType classifierType;
 
 	// can only be created by its children
 	Classer() {};
-	
-	static Features::ImageType treeType;
+
+private:
+
+	static void findClassifierTypeFromCFG();
+	static Features::ImageType findTreeTypeFromCFG();
 
 };
 
