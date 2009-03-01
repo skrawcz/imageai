@@ -19,19 +19,20 @@ public:
 
 	// just create
 	DecisionTree(std::vector<Features::HaarOutput*> examples, std::vector<bool> attribs, 
-							 float percent,Features::ImageType type, int depth);
+							 float percent,Features::ImageType type, int depth, Features::ImageType treeType);
 
 	// create from xml file
-	DecisionTree(std::ifstream &in, bool isNode);
+	DecisionTree(std::ifstream &in, bool isNode, Features::ImageType treeType);
 
 	~DecisionTree();
 
-	Features::ImageType classify(Features::HaarOutput *haary, double *percent);
+	Features::ImageType classify(Features::HaarOutput *haary, double &percent);
 
-	void printToXML(std::ofstream &out, int level);
+
 
 	double chooseAttribute(const std::vector<Features::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
+	void print(std::ofstream &out, int level);
 
 private:
 
@@ -44,7 +45,7 @@ private:
 	std::vector<DecisionTree*> children;
 
 	float majorityPercent;
-	Features::ImageType majorityType;
+	Features::ImageType majorityType, treeType;
 	bool isLeaf;
 	int attribute;
 	double threshold;

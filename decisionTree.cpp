@@ -10,12 +10,14 @@
 
 
 DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vector<bool> attribs, 
-													 float percent, Features::ImageType type, int depth) 
+													 float percent, Features::ImageType type, int depth, Features::ImageType treeType) 
 
 : Classer(),
 	majorityPercent(percent) , 
 	majorityType(type),
+	treeType(treeType),
 	isLeaf(false)
+	
 
 {
 	//std::cout << "in decision tree constructor" << std::endl;
@@ -74,12 +76,12 @@ DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vec
 
 			attribs.at(attribute) = false;
 	
-			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType, ++depth);
+			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType, ++depth, treeType);
 			//reached the end of first child 
 		
 			children.push_back(child);
 
-			child = new DecisionTree(above, attribs, majorityPercent, majorityType, ++depth);
+			child = new DecisionTree(above, attribs, majorityPercent, majorityType, ++depth, treeType);
 
 			children.push_back(child);
 
@@ -87,7 +89,7 @@ DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vec
 	}
 }
 
-DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
+DecisionTree::DecisionTree(std::ifstream &in, bool isNode, Features::ImageType treeType){
 
 	isLeaf = !isNode;
 
@@ -114,9 +116,9 @@ DecisionTree::DecisionTree(std::ifstream &in, bool isNode){
 			// create new node or leaf depending on what we find
 			if(current.find("<node>") != std::string::npos){
 				
-				children.push_back(new DecisionTree(in, true));
+				children.push_back(new DecisionTree(in, true, treeType));
 			}else{
-				children.push_back(new DecisionTree(in, false));
+				children.push_back(new DecisionTree(in, false, treeType));
 			}
 
 			// grab the next line
@@ -145,10 +147,12 @@ DecisionTree::~DecisionTree(){
 
 
 }
-void DecisionTree::printToXML(std::ofstream &out, int level){
+void DecisionTree::print(std::ofstream &out, int level){
 
-	if(level == 0) 
-		printTypeData(out);
+	if(level == 0){
+		printGeneralInfo(out);
+		out << "<treeType>" << treeType << "</treeType>\n";
+	}
 
 	std::string tabStr;
 
@@ -166,7 +170,7 @@ void DecisionTree::printToXML(std::ofstream &out, int level){
 		out << tabStr << "\t<threshold>" << threshold << "</threshold>\n";
 	
 		for(unsigned i=0;i<children.size();++i)
-				children[i]->printToXML(out, level + 1);
+				children[i]->print(out, level + 1);
 
 		out << tabStr << "</node>\n";
 	}
@@ -327,7 +331,7 @@ bool DecisionTree::sameClassification(const std::vector<Features::HaarOutput*> &
 
 }
 
-Features::ImageType DecisionTree::classify(Features::HaarOutput *haary, double *percent){
+Features::ImageType DecisionTree::classify(Features::HaarOutput *haary, double &percent){
 	
 	if(!isLeaf){
 		if(haary->haarVals[attribute] <= threshold){
@@ -340,10 +344,10 @@ Features::ImageType DecisionTree::classify(Features::HaarOutput *haary, double *
 
 		}
 	}else{
-		if(majorityType == treeType)
-			std::cout << majorityPercent << std::endl;
+		//if(majorityType == treeType)
+		//	std::cout << majorityPercent << std::endl;
 
-		*percent = majorityPercent;
+		percent = majorityPercent;
 
 		return majorityType;
 	}

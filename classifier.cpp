@@ -83,14 +83,8 @@ bool CClassifier::saveState(const char *filename)
     if(tree == NULL)	
 			return false;
 
-		
-		std::ofstream ofs ( filename );
 
-		
-		tree->printToXML(ofs, 0);
-
-    ofs.close();
-    return true;
+    return Classer::printToXML(filename, tree);
 }
 
 // run
@@ -118,7 +112,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 				for (int w = 64; w<=320; w = w+8){
 					for (int h = 64 ; h<=240; h = h+8){
 						//check if we are out of frame & for milestone only take squares
-						if( (x+w <= gray->width) && (y+h <= gray->height) && (w==h)) {
+						if( (x+w <= gray->width) && (y+h <= gray->height)) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
 							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
@@ -154,7 +148,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							if(tree){
 								double percent = 0.0;
 
-								classifiedImage = tree->classify(haarOut, &percent);
+								classifiedImage = tree->classify(haarOut, percent);
 
 								
 								//test this image
