@@ -8,37 +8,23 @@
 #include <vector> 
 #include <string> 
 
-#include "../math3d.h"
-
 
 class CfgReader {
 
 public:
 	
+	static	int						strToInt(const std::string &in);
+	static	double				strToDouble(const std::string &in);
 
-
-	static	Eggit::Vector3f			 strToVector(std::string in);
-	static	int						 strToInt(std::string in);
-	static	double					 strToDouble(std::string in);
-
-	static std::string getValue(const std::string &variable);
-
-	static std::vector<std::string> getPowerUps();
-
-	static std::string getPowerUp(const std::string &variable);
-
+	static 	std::string 	getValue(const std::string &variable);
 
 private:
 
 
 	static void readConfig(const std::string &fileName);
-	static void readPowerUps(const std::string &fileName);
 
 	static std::map<std::string, std::string> values;
-	static bool cfgRead;
-
-	static std::map<std::string, std::string> powerUps;
-	static bool powerUpsRead;
+	static bool cfgRead;
 
 
 };
