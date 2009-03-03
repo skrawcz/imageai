@@ -4,6 +4,7 @@
 #include "decisionTree.h"
 #include "multipleDecisionTree.h"
 #include "CXMLParser.h"
+#include "CfgReader.h"
 
 #include <iostream>
 #include <fstream>
@@ -77,9 +78,11 @@ bool Classer::printToXML(const char *filename, Classer *t){
 }
 
 Features::ImageType Classer::findTreeTypeFromCFG(){
-	// should come from config file
-	
-	return Features::MUG;
+
+	std::string type;
+	type = CfgReader::getValue("treeType");
+	std::cout << "Type of single tree is: " << type << std::endl;	
+	return Features::stringToImageType(type);
 
 }
 
@@ -87,7 +90,10 @@ Features::ImageType Classer::findTreeTypeFromCFG(){
 void Classer::findClassifierTypeFromCFG(){
 	// should come from config file
 	std::string type;
-	type = "multipledecisiontree";
+	type = CfgReader::getValue("classifierType");
+
+
+	std::cout << "Type of tree to create is: " << type << std::endl;
 
 	if(type.find("multiple") != -1){
 		classifierType = MULTIPLE;

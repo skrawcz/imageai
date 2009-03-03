@@ -58,18 +58,46 @@ void CfgReader::readConfig(const std::string &fileName){
 		}
     myfile.close();
 
-	}else std::cout << "Unable to open file";
+	}else std::cout << "Unable to open file" << std::endl;
 
 	cfgRead = true;
 
 
 };
 
+void CfgReader::readMainConfig(){
+
+
+	std::ifstream myfile ("configs/mainConfig.cfg");
+
+	if (myfile.is_open()){
+
+		std::string line;
+		getline(myfile,line);
+
+		std::cout << line << std::endl;
+
+		readConfig(line);
+	}else
+		std::cout << "unable to open main cfg" << std::endl;
+
+	myfile.close();
+
+}
+
 std::string CfgReader::getValue(const std::string &variable){
 
 
 	if(!cfgRead)
-		readConfig("config.cfg");
+		readMainConfig();
+
+	// if one feels like looking at the content of the map
+	//std::map<std::string, std::string>::iterator it = values.begin();
+
+	//while(it != values.end()){
+	//	std::cout << it->first.size() << std::endl;
+	//	++it;
+	//}
 
 
 	return values[variable];
