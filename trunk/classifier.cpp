@@ -112,7 +112,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 				for (int w = 64; w<=320; w = w+8){
 					for (int h = 64 ; h<=240; h = h+8){
 						//check if we are out of frame & for milestone only take squares
-						if( (x+w <= gray->width) && (y+h <= gray->height)) {
+						if( (x+w <= gray->width) && (y+h <= gray->height) && h == w) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
 							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
@@ -155,7 +155,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								if (classifiedImage != Features::OTHER && percent > highestPercent){
 						
 									highestPercent = percent;
-									std::cout << classifiedImage << std::endl;
+									//std::cout << classifiedImage << std::endl;
 									obj.rect = cvRect(x,y,w,h);
 									obj.label = Features::imageTypeToString(classifiedImage);
 									

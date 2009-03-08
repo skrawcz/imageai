@@ -97,6 +97,8 @@ void Classer::findClassifierTypeFromCFG(){
 
 	if(type.find("multiple") != -1){
 		classifierType = MULTIPLE;
+	}else if(type.find("boost") != -1){
+		classifierType = BOOST;
 	}else{// if(type.find("single")){
 		classifierType = SINGLE;
 	}

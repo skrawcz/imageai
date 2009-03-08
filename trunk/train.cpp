@@ -41,12 +41,14 @@
 #include "objects.h"
 #include "classifier.h"
 
+#include "CfgReader.h"
+
 using namespace std;
 
 /* Main *********************************************************************/
 
 void usage() {
-    cerr << "./train [<options>] <directory>" << endl << endl;
+    cerr << "./train [<options>] <cfg dir>" << endl << endl;
     cerr << "OPTIONS:" << endl;
     cerr << "    -c <filename>  :: configuration file for saving state" << endl;
     cerr << "    -h             :: show this message" << endl;
@@ -68,7 +70,7 @@ int main(int argc, char *argv[])
 
   // check arguments
   args = argv + 1;
-	while (argc-- > 2) {
+	while (argc-- > 3) {
 		if (!strcmp(*args, "-c")) {
 			argc--; args++;
 			if (configurationFile != NULL) {
@@ -95,9 +97,11 @@ int main(int argc, char *argv[])
   if (argc != 1) {
 
 		*args = NULL;
-		//usage();
-		//exit(-1);
+		usage();
+		exit(-1);
   }
+
+	CfgReader::setUpCfg(*args);
 
   // load the training file list
   TTrainingFileList fileList;

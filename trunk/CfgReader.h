@@ -18,6 +18,7 @@ public:
 
 
 	static 	std::string 	getValue(const std::string &variable);
+	static  void					setUpCfg(const char *dir);
 
 private:
 

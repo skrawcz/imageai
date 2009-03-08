@@ -65,6 +65,17 @@ void CfgReader::readConfig(const std::string &fileName){
 
 };
 
+void CfgReader::setUpCfg(const char *dir){
+
+	std::string main(dir);
+
+
+	readConfig(main);
+
+
+
+}
+
 void CfgReader::readMainConfig(){
 
 
