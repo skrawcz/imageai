@@ -13,12 +13,11 @@ class Classer{
 
 public:
 
-	static Classer * create(const std::vector<Features::HaarOutput*> &examples, Features::ImageType t = Features::MUG);
+	static Classer * create(CvMat *examples, CvMat *imageTypes, Features::ImageType t = Features::MUG);
 	static Classer * createFromXML(const char* filename);
 	static bool printToXML(const char *filename, Classer *t);
 
-
-	virtual Features::ImageType classify(Features::HaarOutput *haary, double &percent) = 0;
+	virtual Features::ImageType classify(CvMat *imageData, double &percent) = 0;
 
 	virtual ~Classer() {};
 

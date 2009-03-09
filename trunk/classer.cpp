@@ -12,7 +12,7 @@
 
 Classer::ClassifierType Classer::classifierType = Classer::SINGLE;
 
-Classer * Classer::create(const std::vector<Features::HaarOutput*> &examples, Features::ImageType t){
+Classer * Classer::create(CvMat *examples, CvMat *imageTypes, Features::ImageType t){
 
 	
 	findClassifierTypeFromCFG();
@@ -20,16 +20,16 @@ Classer * Classer::create(const std::vector<Features::HaarOutput*> &examples, Fe
 	// create a vector of attributes, ie the different haar features.
 	std::vector<bool> attribs;
 
-	for(unsigned i=0;i<HAARAMOUNT;++i)
+	for(int i=0;i<Features::amountOfFeatures();++i)
 		attribs.push_back(true);
 
 	if(classifierType == SINGLE){
 
 		t = findTreeTypeFromCFG();
 
-		return new DecisionTree(examples, attribs, -1, Features::OTHER, 0, t);
+		return new DecisionTree(examples, imageTypes, attribs, -1, Features::OTHER, 0, t);
 	}else{
-		return new MultipleDecisionTree(examples, attribs);
+		return new MultipleDecisionTree(examples, imageTypes, attribs);
 	}
 
 }
