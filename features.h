@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+
 #define HAARAMOUNT 57
 
 class Features{
@@ -13,13 +14,18 @@ public:
   Features();
   ~Features();
 
-  enum HaarType{
-    hH, hV, hD, hTL, hTR, hBL, hBR
-  };
+	// add more types ! :) 
+	enum FeatureType{
+		HAAR
+	};
 
 	// make very sure other is last!
   enum ImageType{
 	  MUG, SCISSORS, STAPLER, CLOCK, KEYBOARD, OTHER
+  };
+
+  enum HaarType{
+    hH, hV, hD, hTL, hTR, hBL, hBR
   };
 
   struct HaarFeature{
@@ -33,6 +39,16 @@ public:
   };
 
   void getHaarFeatures(const IplImage *im, HaarOutput *haary);
+
+
+
+	void getFeatures(const IplImage *im, CvMat *data, int item);
+
+	static int amountOfFeatures(){
+
+		return HAARAMOUNT;
+
+	}
 
 
 	static ImageType stringToImageType(const std::string &val){
@@ -81,6 +97,11 @@ private:
   HaarFeature strToHaar(const std::string &in);
   void readHaars();
   //void applyHaar(const IplImage *im, HaarOutput *haary);
+
+	FeatureType featureType;
+
+
+	void getHaarFeatures(const IplImage *im, CvMat *data, int item);
 
 
 };

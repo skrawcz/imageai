@@ -102,6 +102,11 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 
 		Features::HaarOutput *haarOut;
+
+		// feature vector of image
+		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
+
+
 		CObject obj;
 
 		double highestPercent = 0.01;
@@ -143,12 +148,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
               featureSet->getHaarFeatures(integralImage, haarOut);							
               //applyHaar(integralImage, haarOut);
 
-							
+							featureSet->getFeatures(integralImage, imageData, 0);
 
 							if(tree){
 								double percent = 0.0;
 
-								classifiedImage = tree->classify(haarOut, percent);
+								classifiedImage = tree->classify(imageData, percent);
 
 								
 								//test this image
@@ -200,32 +205,25 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 		std::vector<Features::HaarOutput*> haarOutVec;
 
+		// create cv matrix that has a row of features for every image
+		CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32F);
+
+		// keep track of type of image
+		CvMat *imageTypes = cvCreateMat((int)fileList.files.size(), 1, CV_32S);
+
+
     std::cout << "Processing images..." << std::endl;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
-		bool flagM = true;
-		bool flagO = true;
 
     for (int i = 0; i < (int)fileList.files.size(); i++) {
 			// show progress
 			if (i % 1000 == 0) {
 					showProgress(i, fileList.files.size());
 			}
-
-			/*  USED FOR LIMITING INPUTS...COMMENTED OUT FOR SUBMISSION
-			if(fileList.files[i].label == "mug" && c > 25){
-				flagM = false;
-			}
-			if(fileList.files[i].label == "other" && c > 50){
-				flagO = false;
-			}
-		  c++;//incrementing counter+
-			if(c > 100){//if the counter is more then break
-				break;
-			}*/
 			
 			// load the image
 			image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
@@ -247,16 +245,6 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				gray = image;
 			}
 
-			//Image display code, not needed for submission
-			//could display image
-			//cvNamedWindow("WindowName",CV_WINDOW_AUTOSIZE);//creating view
-			//window - put outside loop
-			//	cvShowImage("WindowName",gray); //display on screen
-			//	cvWaitKey(1); //wait for key press
-			//remember to releaseImage...
-			//cvDestroyWindow("WindowName");//destroying view window - put
-			//outside loop
-
 		  // resize to 64 x 64
 		  cvResize(gray, smallImage);
 
@@ -269,10 +257,12 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			// save image type
 			haarOut->type = Features::stringToImageType(fileList.files[i].label);
 			
-			
 			// save haar features
-			//applyHaar(integralo, haarOut);
-      featureSet->getHaarFeatures(integralo, haarOut);			
+      featureSet->getHaarFeatures(integralo, haarOut);
+
+
+			featureSet->getFeatures(integralo, imageData, i);
+			*( (int*)CV_MAT_ELEM_PTR( *imageTypes, i, 0 ) ) =  Features::stringToImageType(fileList.files[i].label);
 
 			// add to struct of features.
 			haarOutVec.push_back(haarOut);
@@ -295,7 +285,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			delete tree;
 
 		std::cout << "making tree"<<std::endl;
-		tree = Classer::create(haarOutVec);
+		tree = Classer::create(imageData, imageTypes);
 		std::cout << "finished with tree" << std::endl;
 		
 		// clear out haar feature data

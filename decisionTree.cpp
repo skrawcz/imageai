@@ -9,7 +9,7 @@
 #include "highgui.h"
 
 
-DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vector<bool> attribs, 
+DecisionTree::DecisionTree(CvMat *examples, CvMat *imageTypes, std::vector<bool> attribs, 
 													 float percent, Features::ImageType type, int depth, Features::ImageType treeType) 
 
 : Classer(),
@@ -20,22 +20,22 @@ DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vec
 	
 
 {
+
+	Features::ImageType tmpType;
+
 	//std::cout << "in decision tree constructor" << std::endl;
-	if(examples.size() == 0){
-		isLeaf = true;
-		
-	}else if(depth > 10){
+	if(doneClassifying(imageTypes) || depth > 10){
 
 		isLeaf = true;
 		
 
-	}else if(sameClassification(examples)){
+	}else if(sameClassification(imageTypes, tmpType)){
 		isLeaf = true;
 		
 		// value something like 100 % of something :S
 		majorityPercent = 1;
 
-		if(examples.at(0)->type == treeType)
+		if(tmpType == treeType)
 			majorityType = treeType;
 		else
 			majorityType = Features::OTHER;
@@ -50,7 +50,7 @@ DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vec
 	// now its established that we are not a leaf but a beautiful treeeee
 	}else{
 		double infogain;
-		infogain = chooseAttribute(examples, attribs, attribute, threshold);
+		infogain = chooseAttribute(examples, imageTypes, attribs, attribute, threshold);
 	
 		setMajorityValues(examples);
 
@@ -59,29 +59,32 @@ DecisionTree::DecisionTree(std::vector<Features::HaarOutput*> examples, std::vec
 			isLeaf = true;
 		}else{
 		
-			std::vector<Features::HaarOutput*>::iterator it = examples.begin();
-			std::vector<Features::HaarOutput*> above, below;
+
+			CvMat *above = cvCreateMat(imageTypes->rows, 1, CV_32S);
+			CvMat *below = cvCreateMat(imageTypes->rows, 1, CV_32S);
 	
 			//splitting examples on best feature 
-			while(it != examples.end()){
+			for(int i=0; i < imageTypes->rows;++i){
 						
-				if((*it)->haarVals[attribute] <= threshold){
-					below.push_back(*it);
+				if(CV_MAT_ELEM( *examples, float, i, attribute ) <= threshold){
+					*( (int*)CV_MAT_ELEM_PTR( *below, i, 0 ) ) = CV_MAT_ELEM( *imageTypes, int, i, 0 );
+					*( (float*)CV_MAT_ELEM_PTR( *above, i, 0 ) ) = -1;
+
 				}else{
-					above.push_back(*it);
+					*( (int*)CV_MAT_ELEM_PTR( *above, i, 0 ) ) = CV_MAT_ELEM( *imageTypes, int, i, 0 );
+					*( (int*)CV_MAT_ELEM_PTR( *below, i, 0 ) ) = -1;
 				}
-				++it;
 			}
 			//finished splitting examples on best feature
 
 			attribs.at(attribute) = false;
 	
-			DecisionTree *child = new DecisionTree(below, attribs, majorityPercent, majorityType, ++depth, treeType);
+			DecisionTree *child = new DecisionTree(examples, below, attribs, majorityPercent, majorityType, ++depth, treeType);
 			//reached the end of first child 
 		
 			children.push_back(child);
 
-			child = new DecisionTree(above, attribs, majorityPercent, majorityType, ++depth, treeType);
+			child = new DecisionTree(examples, above, attribs, majorityPercent, majorityType, ++depth, treeType);
 
 			children.push_back(child);
 
@@ -177,18 +180,17 @@ void DecisionTree::print(std::ofstream &out, int level){
 
 }
 
-double DecisionTree::chooseAttribute(const
-std::vector<Features::HaarOutput*> &examples,const std::vector<bool>
+double DecisionTree::chooseAttribute(CvMat *examples, CvMat *imageTypes, const std::vector<bool>
 &attribs, int &bestAttribute, double &bestThreshold){
 
-		
+		// TODO  allocate dynamically or such
 		int PositiveVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int NegativeVals [HAARAMOUNT][THRESHOLDVALS][2];
 		int maxAttr;
     long double maxThr, maxInfoGain, tempInfoGain;
 		
 		//initialize all to 0
-		for (int attr=0; attr<HAARAMOUNT; ++attr){
+		for (int attr=0; attr<Features::amountOfFeatures(); ++attr){
 			for (int thr=0; thr<THRESHOLDVALS; ++thr){
 				PositiveVals[attr][thr][1] = 0;
 				NegativeVals[attr][thr][1] = 0;
@@ -196,37 +198,36 @@ std::vector<Features::HaarOutput*> &examples,const std::vector<bool>
 				NegativeVals[attr][thr][0] = 0;
 			}
 		}
-		
-		//start iterator
-		std::vector<Features::HaarOutput*>::const_iterator it = examples.begin();
 
 		//increment counts for each 
-		while(it != examples.end()){
-			for (int attr=0; attr<HAARAMOUNT; ++attr){
+		for(int i=0; i < imageTypes->rows;++i){
 
-				//if attribute is already used skip it
-				if(!attribs.at(attr)){
-					continue;
-				}
+			if(CV_MAT_ELEM( *imageTypes, int, i, 0 ) != -1){
+				for (int attr=0; attr<Features::amountOfFeatures(); ++attr){
+
+					//if attribute is already used skip it
+					if(!attribs.at(attr)){
+						continue;
+					}
 				
-				for (int thr=0; thr<THRESHOLDVALS; ++thr){
+					for (int thr=0; thr<THRESHOLDVALS; ++thr){
 					
-					if ((*it)->haarVals[attr] > (0.1 + 0.1*thr)){
-						if ((*it)->type == treeType){
-							PositiveVals[attr][thr][1]++;
+						if (CV_MAT_ELEM( *examples, float, i, thr ) > (0.1 + 0.1*thr)){
+							if (CV_MAT_ELEM( *imageTypes, int, i, 0 ) == treeType){
+								PositiveVals[attr][thr][1]++;
+							}else{
+								NegativeVals[attr][thr][1]++;
+							}
 						}else{
-							NegativeVals[attr][thr][1]++;
-						}
-					}else{
-						if ((*it)->type == treeType){
-							PositiveVals[attr][thr][0]++;
-						}else{
-							NegativeVals[attr][thr][0]++;
+							if (CV_MAT_ELEM( *imageTypes, int, i, 0 ) == treeType){
+								PositiveVals[attr][thr][0]++;
+							}else{
+								NegativeVals[attr][thr][0]++;
+							}
 						}
 					}
 				}
 			}
-			++it;
 		}
 		
 	maxAttr = -1;
@@ -234,7 +235,7 @@ std::vector<Features::HaarOutput*> &examples,const std::vector<bool>
 	maxInfoGain = -1;
 	long double mlp, mln, mlpUp, mlpDown, mlnUp, mlnDown;
 
-	for (int attr=0; attr<HAARAMOUNT; ++attr){
+	for (int attr=0; attr<Features::amountOfFeatures(); ++attr){
 		//std::cout <<"calculating max info gain = "<<std::endl;
 
 		//if attribute is already used skip it
@@ -295,34 +296,41 @@ std::vector<Features::HaarOutput*> &examples,const std::vector<bool>
 	return maxInfoGain;
 }
 
-bool DecisionTree::sameClassification(const std::vector<Features::HaarOutput*> &examples){
+bool DecisionTree::sameClassification(CvMat *imageTypes, Features::ImageType &tmpType){
 
-	std::vector<Features::HaarOutput*>::const_iterator it = examples.begin();
+	int i = 0;
 
 	// check if first one is treetype or not
-	bool isNotTreeType = ((*it)->type != treeType);
+	while(CV_MAT_ELEM( *imageTypes, int, i, 0 ) == -1){
+
+		++i;
+	}
+
+	bool isNotTreeType = (CV_MAT_ELEM( *imageTypes, int, i, 0 ) != treeType);
+
+	tmpType = (Features::ImageType)CV_MAT_ELEM( *imageTypes, int, i, 0 );
 
 	// loop through examples, if any one has a different type than the first one its not the same classification
 	if(isNotTreeType){
 
-		while(it != examples.end()){
+		for(i=0; i < imageTypes->rows;++i){
 
-			if((*it)->type == treeType)
+			if(CV_MAT_ELEM( *imageTypes, int, i, 0 ) == treeType)
 				return false;
 
-			++it;
 
 		}
 	}else{
 
-		while(it != examples.end()){
+	
 
-			if((*it)->type != treeType){
+		for(i=0; i < imageTypes->rows;++i){
+
+			if(CV_MAT_ELEM( *imageTypes, int, i, 0 ) != treeType){
 				return false;
 	
 			}
 
-			++it;
 
 		}
 	}
@@ -331,16 +339,29 @@ bool DecisionTree::sameClassification(const std::vector<Features::HaarOutput*> &
 
 }
 
-Features::ImageType DecisionTree::classify(Features::HaarOutput *haary, double &percent){
+bool DecisionTree::doneClassifying(CvMat *imageTypes){
+
+	for(int i=0; i < imageTypes->rows;++i){
+
+		if(CV_MAT_ELEM( *imageTypes, int, i, 0 ) != -1)
+			return false;
+
+	}
+
+	return true;
+
+}
+
+Features::ImageType DecisionTree::classify(CvMat *imageData, double &percent){
 	
 	if(!isLeaf){
-		if(haary->haarVals[attribute] <= threshold){
+		if(CV_MAT_ELEM( *imageData, float, 0, attribute ) <= threshold){
 			
-			return children.at(0)->classify(haary, percent);
+			return children.at(0)->classify(imageData, percent);
 
 		}else{
 
-			return children.at(1)->classify(haary, percent);
+			return children.at(1)->classify(imageData, percent);
 
 		}
 	}else{
@@ -365,21 +386,22 @@ bool DecisionTree::isAttribsEmpty(const std::vector<bool> &attribs){
 
 }
 
-void DecisionTree::setMajorityValues(const std::vector<Features::HaarOutput*> &examples){
+void DecisionTree::setMajorityValues(CvMat *imageTypes){
 
-	int positive = 0, negative = 0;
+	int positive = 0, negative = 0, val;
 
-	std::vector<Features::HaarOutput*>::const_iterator it = examples.begin();
 
 	// find the amount of the sought type versus the other types
-	while(it != examples.end()){
+	for(int i=0; i < imageTypes->rows;++i){
 
-		if((*it)->type == treeType)
-			++positive;
-		else
-			++negative;
+		val = CV_MAT_ELEM( *imageTypes, int, i, 0);
 
-		++it;
+		if(val != -1){
+			if(val == treeType)
+				++positive;
+			else
+				++negative;
+		}
 	}
 
 	int max = std::max(positive, negative);
