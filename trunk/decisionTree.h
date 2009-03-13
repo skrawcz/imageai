@@ -18,7 +18,7 @@ class DecisionTree : public Classer{
 public:
 
 	// just create
-	DecisionTree(CvMat *examples, CvMat *imageTypes, std::vector<bool> attribs, 
+	DecisionTree(std::vector<Features::HaarOutput*> examples, std::vector<bool> attribs, 
 							 float percent,Features::ImageType type, int depth, Features::ImageType treeType);
 
 	// create from xml file
@@ -26,21 +26,19 @@ public:
 
 	~DecisionTree();
 
-	Features::ImageType classify(CvMat *imageData, double &percent);
+	Features::ImageType classify(Features::HaarOutput *haary, double &percent);
 
 
 
-	double chooseAttribute(CvMat *examples, CvMat *imageTypes, const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
+	double chooseAttribute(const std::vector<Features::HaarOutput*> &examples,const std::vector<bool> &attribs, int &bestAttribute, double &bestThreshold);
 
 	void print(std::ofstream &out, int level);
 
 private:
 
-	bool sameClassification(CvMat *imageTypes, Features::ImageType &tmpType);
+	bool sameClassification(const std::vector<Features::HaarOutput*> &examples);
 	bool isAttribsEmpty(const std::vector<bool> &attribs);
-	bool doneClassifying(CvMat *imageTypes);
-
-	void setMajorityValues(CvMat *imageTypes);
+	void setMajorityValues(const std::vector<Features::HaarOutput*> &examples);
 	long double EntropyFunc(long double p);
 
 

@@ -20,8 +20,7 @@
 
 #pragma once
 
-#include "cv.h"
-#include "cxcore.h"
+
 
 #include "utils.h"
 #include "objects.h"
