@@ -7,6 +7,7 @@
 #include <vector>
 
 #define HAARAMOUNT 57
+#define TYPECOUNT 6
 
 class Features{
 
@@ -33,37 +34,35 @@ public:
     HaarType t;
   };
 
-  struct HaarOutput{
-    ImageType type;
-    double haarVals[HAARAMOUNT];
-  };
-
-  void getHaarFeatures(const IplImage *im, HaarOutput *haary);
-
 
 
 	void getFeatures(const IplImage *im, CvMat *data, int item);
 
 	static int amountOfFeatures(){
 
-		return HAARAMOUNT;
+		// Make uneven number as the boost functions dont work otherwise
+		return HAARAMOUNT + (HAARAMOUNT + 1)%2;
 
+	}
+
+	static bool amountOfFeaturesRounded(){
+		return (HAARAMOUNT + 1)%2;
 	}
 
 
 	static ImageType stringToImageType(const std::string &val){
 
-		if(val == "other"){
+		if(val.find("other") != std::string::npos){
 			return OTHER;
-		}else if(val == "mug"){
+		}else if(val.find("mug") != std::string::npos){
 			return MUG;
-		}else if(val == "scissors"){
+		}else if(val.find("scissors") != std::string::npos){
 			return SCISSORS;
-		}else if(val == "stapler"){
+		}else if(val.find("stapler") != std::string::npos){
 			return STAPLER;
-		}else if(val == "clock"){
+		}else if(val.find("clock") != std::string::npos){
 			return CLOCK;
-		}else if(val == "keyboard"){
+		}else if(val.find("keyboard") != std::string::npos){
 			return KEYBOARD;
 		}
 

@@ -31,7 +31,7 @@ public:
 
 protected:
 
-	virtual void print(std::ofstream &out, int level) = 0;
+	virtual void print(const char *filename) = 0;
 
 	// in future should print things like if boosted tree etc.
 	void printGeneralInfo(std::ofstream &out){
@@ -40,6 +40,8 @@ protected:
 	};
 
 	static ClassifierType classifierType;
+
+
 
 	// can only be created by its children
 	Classer() {};

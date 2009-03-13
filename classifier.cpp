@@ -100,9 +100,6 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
-
-		Features::HaarOutput *haarOut;
-
 		// feature vector of image
 		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
 
@@ -141,12 +138,6 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 							Features::ImageType classifiedImage = Features::OTHER;
 
-							//create haarOutput object that contains type and haar values of image
-							haarOut = new Features::HaarOutput;
-				
-							// save haar features
-              featureSet->getHaarFeatures(integralImage, haarOut);							
-              //applyHaar(integralImage, haarOut);
 
 							featureSet->getFeatures(integralImage, imageData, 0);
 
@@ -166,7 +157,6 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 									
 								}
 							}
-							delete haarOut;
 							
 
 							cvReleaseImage(&clippedImage);
@@ -196,14 +186,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 		// create haars
     featureSet = new Features();	
-		//readHaars();
 
-    // example code for loading and resizing image files--
-    // you may find this useful for the milestone    
+
     IplImage *image, *smallImage, *integralo, *gray;
-		Features::HaarOutput *haarOut;
-
-		std::vector<Features::HaarOutput*> haarOutVec;
 
 		// create cv matrix that has a row of features for every image
 		CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32F);
@@ -219,7 +204,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
 
-    for (int i = 0; i < (int)fileList.files.size(); i++) {
+    for (int i = 0;i < (int)fileList.files.size(); i++) { 
+								 //i < 20;++i){
+										
 			// show progress
 			if (i % 1000 == 0) {
 					showProgress(i, fileList.files.size());
@@ -251,21 +238,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			// create integral image
 			cvIntegral(smallImage, integralo);
 			
-			//create haarOutput object that contains type and haar values of image
-			haarOut = new Features::HaarOutput;
-
-			// save image type
-			haarOut->type = Features::stringToImageType(fileList.files[i].label);
-			
-			// save haar features
-      featureSet->getHaarFeatures(integralo, haarOut);
-
 
 			featureSet->getFeatures(integralo, imageData, i);
 			*( (int*)CV_MAT_ELEM_PTR( *imageTypes, i, 0 ) ) =  Features::stringToImageType(fileList.files[i].label);
 
-			// add to struct of features.
-			haarOutVec.push_back(haarOut);
 
 		  // free memory
 			//releasing gray (if the image was grayscale to begin with this
@@ -287,10 +263,11 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		std::cout << "making tree"<<std::endl;
 		tree = Classer::create(imageData, imageTypes);
 		std::cout << "finished with tree" << std::endl;
+
+
+		cvReleaseMat(&imageData);
+		cvReleaseMat(&imageTypes);
 		
-		// clear out haar feature data
-		for(unsigned i=0;i<haarOutVec.size();++i)
-			delete haarOutVec[i];
 
     return true;
 }
