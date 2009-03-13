@@ -57,19 +57,19 @@ Classer * Classer::create(CvMat *examples, CvMat *imageTypes, Features::ImageTyp
 
 Classer * Classer::createFromXML(const char* filename){
 
-	std::ifstream ifs ( filename, std::ifstream::in );
-	std::string current;
+	//std::ifstream ifs ( filename, std::ifstream::in );
+	//std::string current;
 
 	// figure out what type of classifier we are using
-	CXMLParser::getNextValue(ifs, current);
-	classifierType = (ClassifierType)atoi(current.c_str());
+	//CXMLParser::getNextValue(ifs, current);
+	//classifierType = (ClassifierType)atoi(current.c_str());
 
 
-	if(classifierType == BOOST){
+	//if(classifierType == BOOST){
 
+		return new BoostTree(filename);
 
-
-	}
+	//}
 
 /*
 	if(classifierType == SINGLE){
