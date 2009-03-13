@@ -72,7 +72,28 @@ BoostTree::BoostTree(const char *filename){
 
 Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 
-	return Features::MUG;
+	double sum, max_sum = 0;
+	int best_class = Features::OTHER;
+
+	for(int j = 0; j < TYPECOUNT; j++ )
+	{
+		imageData->data.fl[Features::amountOfFeatures()] = (float)j;
+		boost->predict( imageData, 0, weak_responses );
+		sum = cvSum( weak_responses ).val[0];
+
+		if( max_sum < sum )
+		{
+			max_sum = sum;
+			best_class = j;
+		}
+	}
+
+	percent = 1.0;
+
+	//std::cout << best_class << std::endl;
+ 
+
+	return Features::ImageType(best_class);
 
 
 }
@@ -80,5 +101,6 @@ Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 BoostTree::~BoostTree(){
 	
 	delete boost;
+	cvReleaseMat(&weak_responses);
 
 }

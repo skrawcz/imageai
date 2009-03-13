@@ -71,6 +71,8 @@ bool CClassifier::loadState(const char *filename)
 
 		//saveState("bongo.xml");
 
+		std::cout << "wefgsfdsf" << std::endl;
+
     return true;
 }
 
@@ -100,8 +102,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
-		// feature vector of image
-		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
+		// feature vector of image plus one in size to work with boost
+		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures()+1, CV_32F);
 
 
 		CObject obj;
