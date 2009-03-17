@@ -18,6 +18,9 @@ public:
 
 
 	static 	std::string 	getValue(const std::string &variable);
+	static 	double 				getDouble(const std::string &variable);
+	static 	int 					getInt(const std::string &variable);
+
 	static  void					setUpCfg(const char *dir);
 
 private:

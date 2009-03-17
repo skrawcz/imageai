@@ -102,16 +102,30 @@ std::string CfgReader::getValue(const std::string &variable){
 	if(!cfgRead)
 		readMainConfig();
 
-	// if one feels like looking at the content of the map
-	//std::map<std::string, std::string>::iterator it = values.begin();
-
-	//while(it != values.end()){
-	//	std::cout << it->first.size() << std::endl;
-	//	++it;
-	//}
-
 
 	return values[variable];
+
+}
+
+double CfgReader::getDouble(const std::string &variable){
+
+
+	if(!cfgRead)
+		readMainConfig();
+
+
+	return strToDouble(values[variable]);
+
+}
+
+int CfgReader::getInt(const std::string &variable){
+
+
+	if(!cfgRead)
+		readMainConfig();
+
+
+	return strToInt(values[variable]);
 
 }
 

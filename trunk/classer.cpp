@@ -2,6 +2,7 @@
 #include "classer.h"
 
 #include "boostTree.h"
+#include "randomTree.h"
 //#include "multipleDecisionTree.h"
 #include "CXMLParser.h"
 #include "CfgReader.h"
@@ -129,6 +130,8 @@ void Classer::findClassifierTypeFromCFG(){
 		classifierType = MULTIPLE;
 	}else if(type.find("boost") != std::string::npos){
 		classifierType = BOOST;
+	}else if(type.find("random") != std::string::npos){
+		classifierType = RANDOM;
 	}else{// if(type.find("single")){
 		classifierType = SINGLE;
 	}
