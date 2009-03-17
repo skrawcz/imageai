@@ -31,7 +31,7 @@ public:
 
 	void print(const char *filename) {
 
-		forest->save( filename );
+		forest.save( filename );
 
 
 	};
