@@ -41,12 +41,12 @@ public:
 	static int amountOfFeatures(){
 
 		// Make uneven number as the boost functions dont work otherwise
-		return HAARAMOUNT + (HAARAMOUNT + 1)%2;
+		return HAARAMOUNT + (HAARAMOUNT)%2;
 
 	}
 
 	static bool amountOfFeaturesRounded(){
-		return (HAARAMOUNT + 1)%2;
+		return (HAARAMOUNT)%2;
 	}
 
 

@@ -22,7 +22,7 @@
 #include "classer.h"
 
 #include "classifier.h"
-#include <vector>
+
 #include <math.h>
 
 
@@ -35,12 +35,11 @@ CClassifier::CClassifier()
     rng = cvRNG(-1);
     parameters = NULL;
 		tree = NULL;
-		//		classifiers
+		
 
-
-    // CS221 TO DO: add initialization for any member variables
+    // CS221 TO DO: add initialization for any member variables   
 }
-
+    
 // destructor
 CClassifier::~CClassifier()
 {
@@ -62,7 +61,7 @@ bool CClassifier::loadState(const char *filename)
 
     assert(filename != NULL);
 
-    featureSet = new Features();
+    featureSet = new Features();		
     //readHaars();
 
 		if(tree)
@@ -82,8 +81,8 @@ bool CClassifier::loadState(const char *filename)
 bool CClassifier::saveState(const char *filename)
 {
     assert(filename != NULL);
-
-    if(tree == NULL)
+    
+    if(tree == NULL)	
 			return false;
 
 
@@ -104,7 +103,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
 		// feature vector of image plus one in size to work with boost
-		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures()+1, CV_32F);
+		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
 
 
 		CObject obj;
@@ -117,28 +116,25 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 				for (int w = 64; w<=320; w = w+8){
 					for (int h = 64 ; h<=240; h = h+8){
 						//check if we are out of frame & for milestone only take squares
-						if( (x+w <= gray->width) && (y+h <= gray->height)) {// && h == w) {
+						if( (x+w <= gray->width) && (y+h <= gray->height) && h == w) {
 							//clip the image to the right size
 							CvRect region = cvRect(x,y,w,h);
-							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height),
+							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
 																										 gray->depth, gray->nChannels);
 							cvSetImageROI(gray,region);
 							cvCopyImage(gray, clippedImage);
 							cvResetImageROI(gray);
-
-							// TODO we need to rescale each image to their ratios
-							// then we pass each classifier the appropriate image
-							// then we threshold and figure out which one to use
-
+							
+								
 							//scale image to 64x64
-							IplImage *resizedImage = cvCreateImage(cvSize(64,64),
-																										 clippedImage->depth,
+							IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
+																										 clippedImage->depth, 
 																										 clippedImage->nChannels);
 							cvResize(clippedImage, resizedImage);
-
+					
 							//compute integral image
-							IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1,
-																														 resizedImage->height+1),
+							IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
+																														 resizedImage->height+1), 
 																											IPL_DEPTH_32S, 1);
 							cvIntegral(resizedImage, integralImage);
 
@@ -152,18 +148,18 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 								classifiedImage = tree->classify(imageData, percent);
 
-
+								
 								//test this image
 								if (classifiedImage != Features::OTHER && percent > highestPercent){
-
+						
 									highestPercent = percent;
 									//std::cout << classifiedImage << std::endl;
 									obj.rect = cvRect(x,y,w,h);
 									obj.label = Features::imageTypeToString(classifiedImage);
-
+									
 								}
 							}
-
+							
 
 							cvReleaseImage(&clippedImage);
 							cvReleaseImage(&resizedImage);
@@ -181,7 +177,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		return true;
 
 }
-
+        
 // train
 // Trains the classifier to recognize the objects given in the
 // training file list.
@@ -191,45 +187,33 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 
 		// create haars
-    featureSet = new Features();
+    featureSet = new Features();	
 
 
     IplImage *image, *smallImage, *integralo, *gray;
 
 		// create cv matrix that has a row of features for every image
-		CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32F);
+		CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32FC1);
 
 		// keep track of type of image
-		CvMat *imageTypes = cvCreateMat((int)fileList.files.size(), 1,	CV_32S);
+		CvMat *imageTypes = cvCreateMat((int)fileList.files.size(), 1, CV_32SC1);
 
-		//this goes through and initialises the data label matrix for each classifier
-		std::vector<CvMat> imageTypeVect(5);
-		/*for(int i=0;i<5;i++){
-			imageTypeVect[i] = &cvCreateMat((int)fileList.files.size(), 1, CV_32S);
-			}*/
 
     std::cout << "Processing images..." << std::endl;
-		//grey scale image
+		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
-		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
+		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
 
 
-    for (int i = 0;i < (int)fileList.files.size(); i++) {
+    for (int i = 0;i < (int)fileList.files.size(); i++) { 
 								 //i < 20;++i){
-			//std::cout<<
-			//Features::stringToImageType(fileList.files[i].label)<<std::endl;
-			std::string lab = Features::imageTypeToString(Features::stringToImageType(fileList.files[i].label));
-			int type = Features::stringToImageType(fileList.files[i].label);
-			/*if ( type == 1 || type ==0 ){//
-				std::cout<<"skipping "<<lab<<std::endl;
-				continue;
-				}*/
+										
 			// show progress
 			if (i % 1000 == 0) {
 					showProgress(i, fileList.files.size());
 			}
-
+			
 			// load the image
 			image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
 			if (image == NULL) {
@@ -249,83 +233,20 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			}else{
 				gray = image;
 			}
-			
-			// TODO we need to rescale each image to their ratios
-			// then we save each image in the data array for each classifier?
+
 		  // resize to 64 x 64
 		  cvResize(gray, smallImage);
 
 			// create integral image
 			cvIntegral(smallImage, integralo);
-
-
-			//this below apparently stores the integral image to the image data matrix
-			//			featureSet->getFeatures(integralo, imageData, i);
-			featureSet->getHOGFeatures(gray,imageData,i);
-
-			//getting the image type in a number
-			int type2 = Features::stringToImageType(fileList.files[i].label);
-			*( (int*)CV_MAT_ELEM_PTR( *imageTypes, i, 0 ) ) =type2;
-
-			//populating the input for each classifier
-			/*
-			switch(type2){
-			case 0://ImageType::MUG:
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[0]), i, 0 ) ) = 0;
-			//these could be the other way around, like 1 for positive and 0 for negative
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[1]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[2]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[3]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[4]), i, 0 ) ) = 1;
-				break;
-				
-			case 1://ImageType::SCISSORS:
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[0]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[1]), i, 0 ) ) = 0;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[2]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[3]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[4]), i, 0 ) ) = 1;
-				break;
-			case 2://ImageType::STAPLER:
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[0]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[1]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[2]), i, 0 ) ) = 0;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[3]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[4]), i, 0 ) ) = 1;
-				break;
-
-			case 3://ImageType::CLOCK:
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[0]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[1]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[2]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[3]), i, 0 ) ) = 0;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[4]), i, 0 ) ) = 1;
-				break;
-			case 4://ImageType::KEYBOARD:
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[0]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[1]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[2]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[3]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[4]), i, 0 ) ) = 0;
-				break;
-				
-			case 5://ImageType::OTHER:
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[0]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[1]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[2]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[3]), i, 0 ) ) = 1;
-				*( (int*)CV_MAT_ELEM_PTR( *(imageTypeVect[4]), i, 0 ) ) = 1;
-				break;
-			}*/
-			Features::stringToImageType(fileList.files[i].label);
-			
-			
 			
 
-			//std::cout<<"making label " << lab << std::endl;
+			featureSet->getFeatures(integralo, imageData, i);
 
+			cvSetReal1D( imageTypes, i, Features::stringToImageType(fileList.files[i].label) );
 
-			std::cout << Features::stringToImageType(fileList.files[i].label) << std::endl;
+			//std::cout << Features::stringToImageType(fileList.files[i].label) << std::endl;
+
 		  // free memory
 			//releasing gray (if the image was grayscale to begin with this
 		  //should point to the same thing and still work
@@ -333,7 +254,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     }
 		//	cvDestroyWindow("WindowName");//destroying view window - put
-		//outside loop
+				//outside loop
     // free memory
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
@@ -343,17 +264,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		if(tree != NULL)
 			delete tree;
 
-		std::cout << "making trees"<<std::endl;
-		//for(int i=0; i< 5; i++){
-		//	classifiers[i]=Classer::create(imageData,imageTypeVect[i]);
-		//	}
-		//tree = Classer::create(imageData, imageTypes);
+		std::cout << "making tree"<<std::endl;
+		tree = Classer::create(imageData, imageTypes);
 		std::cout << "finished with tree" << std::endl;
 
 
 		cvReleaseMat(&imageData);
 		cvReleaseMat(&imageTypes);
-
+		
 
     return true;
 }

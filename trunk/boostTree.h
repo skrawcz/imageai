@@ -9,6 +9,9 @@
 #include "cxcore.h"
 #include "ml.h"
 
+#include <sstream>
+
+
 class Features;
 
 class BoostTree : public Classer{
@@ -28,7 +31,15 @@ public:
 
 	void print(const char *filename) {
 
-		boost->save( filename );
+		for(int j = 0; j < TYPECOUNT; j++ ){
+			std::string egon(filename);
+
+			std::stringstream out;
+			out << j << ".xml";
+			egon.append(out.str());
+
+			boost.at(j)->save( egon.c_str() );
+		}
 
 	};
 
@@ -36,8 +47,8 @@ public:
 
 private:
 
-	CvBoost *boost;
-	CvMat * weak_responses;
+	std::vector<CvBoost *> boost;
+	std::vector<CvMat *> weak_responses;
 
 };
 
