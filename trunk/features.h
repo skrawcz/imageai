@@ -34,7 +34,7 @@ public:
     HaarType t;
   };
 
-
+	void getHOGFeatures(const IplImage *im, CvMat* data, int item);
 
 	void getFeatures(const IplImage *im, CvMat *data, int item);
 
