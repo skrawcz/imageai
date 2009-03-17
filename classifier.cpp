@@ -15,11 +15,15 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "cv.h"
 #include "cxcore.h"
 #include "highgui.h"
 #include "classer.h"
+#include "CfgReader.h"
 
 #include "classifier.h"
 
@@ -172,7 +176,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		}
 		cvReleaseImage(&gray);
 
-		if(highestPercent > .9)
+		//if(highestPercent > .9)
 			objects->push_back(obj);
 
 		return true;
@@ -193,67 +197,83 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
     IplImage *image, *smallImage, *integralo, *gray;
 
+		// figure out if a subset of images is wanted
+		int subset = CfgReader::strToInt(CfgReader::getValue("useSubset"));
+		std::cout << "Training on a subset of about: " << subset  << std::endl;
+		srand ( time(NULL) );
+		int count = 0;
+
 		// create cv matrix that has a row of features for every image
-		//CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32FC1);
-		CvMat *imageData = cvCreateMat((int)fileList.files.size(), featureSet->amountOfFeatures(), CV_32FC1);
+		CvMat *imageData = cvCreateMat((int)(fileList.files.size()/subset), featureSet->amountOfFeatures(), CV_32FC1);
 		// keep track of type of image
-		CvMat *imageTypes = cvCreateMat((int)fileList.files.size(), 1, CV_32SC1);
+		CvMat *imageTypes = cvCreateMat((int)(fileList.files.size()/subset), 1, CV_32SC1);
 
 
     std::cout << "Processing images..." << std::endl;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
-		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);	
-
+		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
 
     for (int i = 0;i < (int)fileList.files.size(); i++) { 
 								 //i < 20;++i){
-										
+
 			// show progress
 			if (i % 1000 == 0) {
 					showProgress(i, fileList.files.size());
 			}
+
+
+			// doing this we simply avoid some of the "other" images 
+			if(Features::stringToImageType(fileList.files[i].label) != 5 || (rand() % subset == 0 &&  imageData->rows - count > 284)) {
+
+
+				count++;
+
+				if(count >= imageData->rows)
+					break;
 			
-			// load the image
-			image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
-			if (image == NULL) {
-				std::cerr << "ERROR: could not load image "
-						 << fileList.files[i].filename.c_str() << std::endl;
-				continue;
-			}
+				// load the image
+				image = cvLoadImage(fileList.files[i].filename.c_str(), 0);
+				if (image == NULL) {
+					std::cerr << "ERROR: could not load image "
+							 << fileList.files[i].filename.c_str() << std::endl;
+					continue;
+				}
 
-			//this checks to see if the channel is 1, if not
-			//it converts it to gray scale
-			//otherwise makes gray point to the same image
-			if(image->nChannels != 1){
-				gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
-				cvCvtColor(image,gray,CV_BGR2GRAY);
-				//releasing old image as we don't need it now
-				cvReleaseImage(&image);
-			}else{
-				gray = image;
-			}
+				//this checks to see if the channel is 1, if not
+				//it converts it to gray scale
+				//otherwise makes gray point to the same image
+				if(image->nChannels != 1){
+					gray = cvCreateImage(cvGetSize(image),IPL_DEPTH_8U,1);
+					cvCvtColor(image,gray,CV_BGR2GRAY);
+					//releasing old image as we don't need it now
+					cvReleaseImage(&image);
+				}else{
+					gray = image;
+				}
 
-		  // resize to 64 x 64
-		  cvResize(gray, smallImage);
+				// resize to 64 x 64
+				cvResize(gray, smallImage);
 
-			// create integral image
-			cvIntegral(smallImage, integralo);
+				// create integral image
+				cvIntegral(smallImage, integralo);
 			
 
-			featureSet->getFeatures(integralo, imageData, i,smallImage);
-			//			featureSet->getHOGFeatures(smallImage,imageData,i);
-			//featureSet->getHOGFeatures(smallImage,imageData,i);
+				featureSet->getFeatures(integralo, imageData, count,smallImage);
+				//			featureSet->getHOGFeatures(smallImage,imageData,i);
+				//featureSet->getHOGFeatures(smallImage,imageData,i);
 
-			cvSetReal1D( imageTypes, i, Features::stringToImageType(fileList.files[i].label) );
+				cvSetReal1D( imageTypes, count, Features::stringToImageType(fileList.files[i].label) );
 
-			//std::cout << Features::stringToImageType(fileList.files[i].label) << std::endl;
+				//std::cout << Features::stringToImageType(fileList.files[i].label) << std::endl;
 
-		  // free memory
-			//releasing gray (if the image was grayscale to begin with this
-		  //should point to the same thing and still work
-			cvReleaseImage(&gray);
+				// free memory
+				//releasing gray (if the image was grayscale to begin with this
+				//should point to the same thing and still work
+				cvReleaseImage(&gray);
+
+			}
 
     }
 		//	cvDestroyWindow("WindowName");//destroying view window - put

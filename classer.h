@@ -24,7 +24,8 @@ public:
 	enum ClassifierType{
 		SINGLE,
 		MULTIPLE,
-		BOOST
+		BOOST,
+		RANDOM
 	};
 
 
