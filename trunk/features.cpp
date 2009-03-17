@@ -8,7 +8,7 @@
 #include "cv.h"
 #include "cxcore.h"
 #include "highgui.h"
-
+#include <vector>
 #define PI 3.14159265
 
 
@@ -240,17 +240,11 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 		}
 	}
 	
-	//need to setup histograms here.
-	int numBins[]={12};
-	float range[]={0,360};
-	float *ranges[]= {range};
-	CvHistogram* hist;
-	//cvMakeHistHeaderForArray(1, numBins, hist,dxarray, ranges);
 
-	// = cvCreateHist(1,numBins,CV_HIST_ARRAY,ranges);
 	
 	float orientations[dstx->height * dstx->width];
 	float magnitudes[dstx->height * dstx->width];
+	int counter=0;
 	//calculating the gradient magnitudes here
 	for(int i=0; i< (dstx->height * dsty->width);i++){
 		double ex = dxarray[i];
@@ -259,6 +253,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 		double o = atan2(ey,ex); //in radians -Pi to Pi
 		double alpha = o*180/PI;
 		double alpha_signed = alpha;
+		//std::cout<<"x,y = "<<ex<<","<<ey<<" o=" << o<<std::endl;
 		if(alpha < 0.0){
 			alpha_signed = alpha+360.0;
 		}
@@ -266,10 +261,13 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 		orientations[i]=(float)alpha_signed;
 		//now need to bin it for each cell
 		//std::cout<<"alpha = "<<alpha_signed<<std::endl;
+		counter++;
 	}
+	//std::cout<<"counter = "<<counter<<std::endl;
+	//std::cout<<"x,y = "<<dstx->height<<","<<dstx->width<<std::endl;
 	//need to setup data arrays to store data to make histograms from
 	//to capture strong edges, need to weight them by the magnitude
-	int numCells = 64;
+	int numCells = 8*8;
 	float *cellOPtr[numCells];
 	float *cellMPtr[numCells];
 	//not doing overlaping anymore, just doing simple method
@@ -279,55 +277,122 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 	int width=64;
 	int height=64;
 	int cellWidth=8;
-
+	float normConst=0.0f;
+	
 	float *oCell;
 	float *mCell;
-
+	
 	int idx;
 	//going through each cell and making a float array of
 	//the orientations and magnitudes for it
+	//this is so we can compute histogram input
 	for(int i=0; i< numCells;i++){
 	
-		int start = i*cellWidth;
+		int start = i*cellWidth+(i/8)*7*width;
 			
 		mCell = new float[cellWidth*cellWidth];
 		oCell = new float[cellWidth*cellWidth];
 
 		idx = 0;
+		//std::cout<<"i = "<<i<<" start = "<<start<<std::endl;
 		
-		for(int j=start;j<start + cellWidth;++j){
-
-			for(int k=start + j*height;k < start + j*height + cellWidth;++k){
-
-				mCell[idx] = magnitudes[k];
-				oCell[idx++] = orientations[k];
+		//		for(int j=start +width;j<start*width + cellWidth;++j){
+		for(int j=0; j<8;j++){
+			int rowStart = start + j*width;			
+			//std::cout<<"rowStart= "<<rowStart<<std::endl;
+			//std::cout<<"j = "<<j<<"< "<<start*width+cellWidth<<std::endl;
+			for(int k=0; k<8; k++){
+				int pos = rowStart+k;
+				//				std::cout<<"pos ="<<pos<<std::endl;
+				/*if(pos > 4095){
+					std::cout<<"Crap - "<<pos<<std::endl;
+				}else if(pos==4095){
+					std::cout<<"hooray"<<std::endl;
+					}*/
+				mCell[idx] = magnitudes[pos];
+				oCell[idx++] = orientations[pos];
+				normConst = normConst+magnitudes[pos];
 
 			}
+			/*for(int k=start + j*height;k < start + j*height + cellWidth;++k){
+				std::cout<<"k = "<<k<<std::endl;
+				mCell[idx] = magnitudes[k];
+				//std::cout<<"mag = "<<magnitudes[k];
+				oCell[idx++] = orientations[k];
+				//std::cout<<"orien = "<<orientations[k];
+				//std::cout<<" "<<orientations[k];
+				normConst = normConst+magnitudes[k];
+				}*/
 		}
+		//		std::cout<<std::endl;
 
 		cellOPtr[i]=oCell;
 		cellMPtr[i]=mCell;
 	}
-				
+	return;
+	//was thinking of normalizing it somehow, but meh
+	if (normConst==0){
+		normConst=1;
+	}else{
+		normConst =1 ;///normConst;
+	}
+	//cells are now in a double array
+	std::cout<<"I die here"<<std::endl;
+	//std::cout<<"normConst = "<< 1/normConst*10000<<std::endl;
+	std::vector<std::vector<float> > histInputVect;
+	std::vector<std::vector<float> > histInputVectMags;
+	//now need to make arrays for histogram input
 	for(int q=0;q<numCells;q++){
-		std::cout<<"entry ";
-		for(int j=0;j<64;j++){
-				std::cout<<cellOPtr[q][j]<<" ";
-		
+		std::vector<float> inputs;	
+		std::vector<float> mags;
+		for(int j=0;j<64;j++){//64 as things are 8x8
+			//std::cout<<"mag = "<<cellMPtr[q][j]<<" ";
+			inputs.push_back(cellOPtr[q][j]);
+			mags.push_back(cellMPtr[q][j]);
 		}
-		std::cout<<std::endl;
+		histInputVect.push_back(inputs);
+		histInputVectMags.push_back(inputs);
+		//	std::cout<<" size pushed back= "<<inputs.size();
+	}
+	
+	float * inputs;
+	float* floats[numCells];
+	//making histogram input;
+	for(int q=0;q<numCells;q++){
+		std::vector<float> v= histInputVect.at(q);
+		std::vector<float> mags=histInputVectMags.at(q);
+		floats[q]=makeHistogram(v,mags,normConst);
 	}
 
-	
+	float* featureArray;
+	featureArray = new float[numCells * 9];
+	for(int q=0,idx=0;q<numCells;q++){
+		for(int k=0;k<9;k++){
+			float f = floats[q][k];
+			
+			featureArray[idx++]=f;
+		}
+	}
+		//deallocate
+	for(int i=0; i< numCells;i++){
+		delete floats[i];
+		delete cellOPtr[i];
+		delete cellMPtr[i];
+	}
+	//std::cout<<"One image = ";
+	for(int q=0;q<numCells;q++){
+		//			std::cout<<"one hist =";
+		for(int j=0;j<9;j++){
+			//					std::cout<<" "<<floats[q][j];
+		}
+		//			std::cout<<std::endl;
+	}
+	//TODO: actually return it:
 
-	//need to calculate the gradient orienation
-
-
-
-
+ 
 	//==== display debugging stuff here=======
   //making display windows
-	cvNamedWindow("HOG IN image");
+	/*cvNamedWindow("HOG IN image");
 	cvNamedWindow("Smoothed IN image");
 	cvNamedWindow("dx image");
 	cvNamedWindow("dy image");
@@ -338,17 +403,59 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 	//showing x and y gradient images
 	cvShowImage("dx image",dstx);
 	cvShowImage("dy image",dsty);
- 
 	
 	cvWaitKey( 0 );
+	*/
 	//====== releasing stuff============
 	cvReleaseImage(&dstx);
 	cvReleaseImage(&dsty);
 	cvReleaseImage(&smoothed);
 
 	//killing display windows
-	cvDestroyWindow("HOG IN image");
+	/*cvDestroyWindow("HOG IN image");
 	cvDestroyWindow("Smoothed IN image");
 	cvDestroyWindow("dx image");
-	cvDestroyWindow("dy image");
+	cvDestroyWindow("dy image");*/
+}
+
+
+float* Features::makeHistogram(std::vector<float> ovect,std::vector<float>
+	mvect,float normConst){
+	float* hist;
+	int numBins=9;
+	hist= new float[numBins];
+	for(int i=0; i<numBins; i++){
+		hist[i]=0;
+	}
+	//	std::cout<<"val = ";
+	for(int i=0; i<ovect.size(); i++){
+		float val = ovect.at(i);
+		//	std::cout<<val<<" ";
+		float mag = mvect.at(i)/normConst;
+		if(val >= 0 && val <40){
+			hist[0]=hist[0]+val*mag;
+		}else if(val>=40 && val <80){
+			//std::cout<<"other"<<std::endl;
+			hist[1]=hist[1]+val*mag;
+		}else if(val>=80 && val <120){
+			//std::cout<<"other"<<std::endl;
+			hist[2]=hist[2]+val*mag;
+		}else if(val>=120 && val <160){
+			hist[3]=hist[3]+val*mag;
+		}else if(val>=160 && val <200){
+			hist[4]=hist[4]+val*mag;
+		}else if(val>=200 && val <240){
+			hist[5]=hist[5]+val*mag;
+		}else if(val>=240 && val <280){
+			hist[6]=hist[6]+val*mag;
+		}else if(val>=280 && val <320){
+			hist[7]=hist[7]+val*mag;
+		}else if(val>=320 && val <360){
+			hist[8]=hist[8]+val*mag;
+		}else{
+			std::cout<<"error, degrees range exceeded bin!!! "<<val <<std::endl;
+		}
+	}
+	//	std::cout<<std::endl;
+	return hist;
 }
