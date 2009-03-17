@@ -204,7 +204,11 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		int count = 0;
 
 		// create cv matrix that has a row of features for every image
-		CvMat *imageData = cvCreateMat((int)(fileList.files.size()/subset), featureSet->amountOfFeatures(), CV_32FC1);
+		//CvMat *imageData = cvCreateMat((int)fileList.files.size(),
+		//Features::amountOfFeatures(), CV_32FC1);
+		std::cout<<"there are this many features"<<featureSet->amountOfFeatures()<<std::endl;
+		CvMat *imageData = cvCreateMat((int)fileList.files.size(), featureSet->amountOfFeatures(), CV_32FC1);
+
 		// keep track of type of image
 		CvMat *imageTypes = cvCreateMat((int)(fileList.files.size()/subset), 1, CV_32SC1);
 
