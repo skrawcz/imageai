@@ -5,6 +5,12 @@
 #include <sstream>
 #include <fstream>
 #include <math.h>
+#include "cv.h"
+#include "cxcore.h"
+#include "highgui.h"
+
+#define PI 3.14159265
+
 
 Features::Features(){
 
@@ -200,4 +206,138 @@ Features::HaarFeature Features::strToHaar(const std::string &in){
 
 	return out;
 
+}
+
+void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
+
+
+
+	//making space to save gradient images
+	IplImage *dstx = cvCreateImage(cvGetSize(im),IPL_DEPTH_8U,1);
+	IplImage *dsty = cvCreateImage(cvGetSize(im),IPL_DEPTH_8U,1);
+	IplImage *smoothed =cvCreateImage(cvGetSize(im),IPL_DEPTH_8U,1);
+	cvSmooth(im   , smoothed  , CV_GAUSSIAN, 3, 3 );
+	
+	//getting the derivatives
+	cvSobel(smoothed,dstx,1,0);
+	cvSobel(smoothed,dsty,0,1);
+
+	//need to get the data out of the iplimage format
+	double dxarray[dstx->height * dstx->width];
+	int count=0;
+	for( int y=0; y<dstx->height; y++ ) {
+		uchar* ptr = (uchar*) (dstx->imageData + y * dstx->widthStep);
+		for( int x=0; x<dstx->width; x++ ) {
+			dxarray[count++]= ptr[1*x+1];
+		}
+	}
+	double dyarray[dsty->height*dsty->width];
+	count=0;
+	for( int y=0; y<dsty->height; y++ ) {
+		uchar* ptr = (uchar*) (dsty->imageData + y * dsty->widthStep);
+		for( int x=0; x<dsty->width; x++ ) {
+			dyarray[count++]= ptr[1*x+1];
+		}
+	}
+	
+	//need to setup histograms here.
+	int numBins[]={12};
+	float range[]={0,360};
+	float *ranges[]= {range};
+	CvHistogram* hist;
+	//cvMakeHistHeaderForArray(1, numBins, hist,dxarray, ranges);
+
+	// = cvCreateHist(1,numBins,CV_HIST_ARRAY,ranges);
+	
+	float orientations[dstx->height * dstx->width];
+	float magnitudes[dstx->height * dstx->width];
+	//calculating the gradient magnitudes here
+	for(int i=0; i< (dstx->height * dsty->width);i++){
+		double ex = dxarray[i];
+		double ey = dyarray[i];
+		double mag = sqrt(pow(ex,2) + pow(ey,2));
+		double o = atan2(ey,ex); //in radians -Pi to Pi
+		double alpha = o*180/PI;
+		double alpha_signed = alpha;
+		if(alpha < 0.0){
+			alpha_signed = alpha+360.0;
+		}
+		magnitudes[i]=(float)mag;
+		orientations[i]=(float)alpha_signed;
+		//now need to bin it for each cell
+		//std::cout<<"alpha = "<<alpha_signed<<std::endl;
+	}
+	//need to setup data arrays to store data to make histograms from
+	//to capture strong edges, need to weight them by the magnitude
+	int numCells = 64;
+	float *cellOPtr[numCells];
+	float *cellMPtr[numCells];
+	//not doing overlaping anymore, just doing simple method
+	//this points to the 15, as they are 8x8 and we
+	//move them over ever 4  cells
+
+	int width=64;
+	int height=64;
+	int cellWidth=8;
+	for(int i=0; i< numCells;i++){
+		//one cell
+		//1stcell start=0, next = 7, next =15
+		int start=i*cellWidth;
+		//start 0-7 = first row
+		float oCell[64];
+		float mCell[64];
+		int idx=0;
+		for(int row=0;row<cellWidth;row++){
+			int rowStart=start + cellWidth*(row-1);
+			for(int k=0;k<cellWidth;k++){
+				oCell[idx]=orientations[rowStart+k];
+				mCell[idx++]=magnitudes[rowStart+k];
+			}
+		}
+		cellOPtr[i]=oCell;
+		cellMPtr[i]=mCell;
+	}
+				
+	for(int q=0;q<numCells;q++){
+		std::cout<<"entry ";
+		for(int j=0;j<64;j++){
+				std::cout<<cellOPtr[q][j]<<" ";
+		
+		}
+		std::cout<<std::endl;
+	}
+
+	
+
+	//need to calculate the gradient orienation
+
+
+
+
+	//==== display debugging stuff here=======
+  //making display windows
+	cvNamedWindow("HOG IN image");
+	cvNamedWindow("Smoothed IN image");
+	cvNamedWindow("dx image");
+	cvNamedWindow("dy image");
+
+	//showing images
+	cvShowImage("HOG IN image",im);
+	cvShowImage("Smoothed IN image",smoothed);
+	//showing x and y gradient images
+	cvShowImage("dx image",dstx);
+	cvShowImage("dy image",dsty);
+ 
+	
+	cvWaitKey( 0 );
+	//====== releasing stuff============
+	cvReleaseImage(&dstx);
+	cvReleaseImage(&dsty);
+	cvReleaseImage(&smoothed);
+
+	//killing display windows
+	cvDestroyWindow("HOG IN image");
+	cvDestroyWindow("Smoothed IN image");
+	cvDestroyWindow("dx image");
+	cvDestroyWindow("dy image");
 }
