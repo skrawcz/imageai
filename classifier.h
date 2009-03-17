@@ -21,10 +21,11 @@
 #pragma once
 
 
-
+#include <vector>
 #include "utils.h"
 #include "objects.h"
 #include "features.h"
+#include "classer.h"
 
 class Classer;
 
@@ -56,6 +57,7 @@ public:
 
 private:
 		Classer *tree;
+		std::vector<Classer*> classifiers;
     Features *featureSet;
 };
 

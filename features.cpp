@@ -284,12 +284,12 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 	float *mCell;
 
 	int idx;
-
+	//going through each cell and making a float array of
+	//the orientations and magnitudes for it
 	for(int i=0; i< numCells;i++){
 	
 		int start = i*cellWidth;
-	
-		
+			
 		mCell = new float[cellWidth*cellWidth];
 		oCell = new float[cellWidth*cellWidth];
 
@@ -304,7 +304,6 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 
 			}
 		}
-
 
 		cellOPtr[i]=oCell;
 		cellMPtr[i]=mCell;
