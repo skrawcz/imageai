@@ -103,7 +103,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
 
 		// feature vector of image plus one in size to work with boost
-		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
+		//		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
+		CvMat *imageData = cvCreateMat(1, featureSet->amountOfFeatures(), CV_32F);
 
 
 		CObject obj;
@@ -141,7 +142,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							Features::ImageType classifiedImage = Features::OTHER;
 
 
-							featureSet->getFeatures(integralImage, imageData, 0);
+							featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
 
 							if(tree){
 								double percent = 0.0;
@@ -193,8 +194,8 @@ bool CClassifier::train(TTrainingFileList& fileList)
     IplImage *image, *smallImage, *integralo, *gray;
 
 		// create cv matrix that has a row of features for every image
-		CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32FC1);
-
+		//CvMat *imageData = cvCreateMat((int)fileList.files.size(), Features::amountOfFeatures(), CV_32FC1);
+		CvMat *imageData = cvCreateMat((int)fileList.files.size(), featureSet->amountOfFeatures(), CV_32FC1);
 		// keep track of type of image
 		CvMat *imageTypes = cvCreateMat((int)fileList.files.size(), 1, CV_32SC1);
 
@@ -241,7 +242,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			cvIntegral(smallImage, integralo);
 			
 
-			featureSet->getFeatures(integralo, imageData, i);
+			featureSet->getFeatures(integralo, imageData, i,smallImage);
+			//			featureSet->getHOGFeatures(smallImage,imageData,i);
+			//featureSet->getHOGFeatures(smallImage,imageData,i);
 
 			cvSetReal1D( imageTypes, i, Features::stringToImageType(fileList.files[i].label) );
 

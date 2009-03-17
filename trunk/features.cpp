@@ -11,29 +11,90 @@
 #include <vector>
 #define PI 3.14159265
 
+#define HAARAMOUNT 57
+#define HOGAMOUNT 64
+//#define TYPECOUNT 5
 
 Features::Features(){
 
-	featureType = HAAR;
+	//we should probably make this some value we pass in
+	//	featureType = HAAR;
+	 	featureType = HOG;
+	//featureType = HAARHOG;
 
   readHaars();
 }
 
 Features::~Features(){
-  
+	//should probably deallocate the features...
 }
 
-void Features::getFeatures(const IplImage *im, CvMat *data, int item){
+bool Features::amountOfFeaturesRounded(){
+		//		return (HAARAMOUNT)%2;
+	switch(featureType){
+		case HAAR:
+			return (HAARAMOUNT)%2;
+			//break;
+			
+		case HOG:
+			return (HOGAMOUNT)%2;
+			//break;
+			
+		case HAARHOG:
+			return (HAARAMOUNT + HOGAMOUNT)%2;
+			//	break;
+		}
+	return false;
+}
+
+int Features::amountOfFeatures(){
+
+	// Make uneven number as the boost functions dont work otherwise
+	//		return HAARAMOUNT + (HAARAMOUNT)%2;
+	switch(featureType){
+	case HAAR:
+		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
+		break;
+			
+	case HOG:
+		return HOGAMOUNT;
+		break;
+			
+	case HAARHOG:
+		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
+		break;
+	}
+	return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
+
+}
 
 
-	if(featureType == HAAR)
+void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplImage *realImg){
+
+	float* ptrToFeatures;
+	if(featureType == HAAR){
 		getHaarFeatures(im, data, item);
+	}else if(featureType == HOG){
+		//getting the float array out and putting it into the matrix
+		ptrToFeatures=getHOGFeatures(realImg);
+		for(int i=0;i<HOGAMOUNT;i++){
+			cvSetReal2D( data,item,i,ptrToFeatures[i]);
+		}
+	}else{
+		//TODO: make the two feature vectors concatenate onto each other
+		getHaarFeatures(im, data, item);
+		ptrToFeatures=getHOGFeatures(realImg);
+		for(int i=0;i<HAARAMOUNT+HOGAMOUNT;i++){
+			cvSetReal2D( data,item,i,ptrToFeatures[i]);
+		}
+	}
+
 	
 	// if the amount of features is uneven then make sure last element is set to zero
-	if(amountOfFeaturesRounded){
+	if(amountOfFeaturesRounded()){
 
-		*( (float*)CV_MAT_ELEM_PTR( *data, item, amountOfFeatures() - 1 ) ) = 0.0f;
-
+		//		*( (float*)CV_MAT_ELEM_PTR( *data, item, amountOfFeatures() - 1 ) ) = 0.0f;
+		cvSetReal2D(data,item,amountOfFeatures()-1,0.0f);
 	}
 
 }
@@ -208,7 +269,9 @@ Features::HaarFeature Features::strToHaar(const std::string &in){
 
 }
 
-void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
+//void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
+float* Features::getHOGFeatures(const IplImage *im){
+
 
 
 
@@ -329,7 +392,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 		cellOPtr[i]=oCell;
 		cellMPtr[i]=mCell;
 	}
-	return;
+	
 	//was thinking of normalizing it somehow, but meh
 	if (normConst==0){
 		normConst=1;
@@ -337,7 +400,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 		normConst =1 ;///normConst;
 	}
 	//cells are now in a double array
-	std::cout<<"I die here"<<std::endl;
+	
 	//std::cout<<"normConst = "<< 1/normConst*10000<<std::endl;
 	std::vector<std::vector<float> > histInputVect;
 	std::vector<std::vector<float> > histInputVectMags;
@@ -416,6 +479,8 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
 	cvDestroyWindow("Smoothed IN image");
 	cvDestroyWindow("dx image");
 	cvDestroyWindow("dy image");*/
+	return featureArray;
+
 }
 
 
