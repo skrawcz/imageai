@@ -30,7 +30,10 @@ Classer * Classer::create(CvMat *examples, CvMat *imageTypes, Features::ImageTyp
 
 
 
-	}
+	}//else if(classifierType == BAGGING){
+
+		
+	//}
 
 	/*
 

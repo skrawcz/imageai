@@ -44,7 +44,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 	cvReleaseMat( &new_responses );
 	printf("\n");
 
-	weak_responses = cvCreateMat( 1, boost->get_weak_predictors()->total, CV_32F ); 
+	weak_responses = cvCreateMat( 1, boost->get_weak_predictors()->total, CV_32F );
 
 }
 
@@ -65,7 +65,7 @@ BoostTree::BoostTree(const char *filename){
 
 		printf( "The classifier %s is loaded.\n", filename );
 
-		weak_responses = cvCreateMat( 1, boost->get_weak_predictors()->total, CV_32F ); 
+		weak_responses = cvCreateMat( 1, boost->get_weak_predictors()->total, CV_32F );
 	}
 
 }
@@ -74,16 +74,20 @@ Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 
 	double sum, max_sum = 0, tmppercent;
 	int best_class = Features::OTHER;
+	//std::cout << "before " << best_class << std::endl;
+	
+	CvMat* weak_resp = cvCreateMat(1,boost->get_weak_predictors()->total,CV_32F);
 
 
-	cvReleaseMat(&weak_responses);
-	weak_responses = cvCreateMat( 1, boost->get_weak_predictors()->total, CV_32F ); 
-
-	for(int j = 0; j < TYPECOUNT; j++ )
+	//	for(int j = 0; j < TYPECOUNT; j++ )
+	for(int j = TYPECOUNT; j >= 0; j-- )
 	{
 		imageData->data.fl[Features::amountOfFeatures()] = (float)j;
-		tmppercent = boost->predict( imageData, 0, weak_responses );
-		sum = cvSum( weak_responses ).val[0];
+
+		//		boost->predict( imageData, 0, weak_responses );
+		boost->predict( imageData, 0, weak_resp );
+		sum = cvSum( weak_resp ).val[0];
+		//		sum = cvSum( weak_responses ).val[0];
 
 		if( max_sum < sum )
 		{
@@ -92,13 +96,18 @@ Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 			best_class = j;
 		}
 	}
-
-	//std::cout << percent << std::endl;
-
+	//if(max_sum != 0.00){
+	//	std::cout<< "sum is " <<max_sum <<std::endl;
+	//}
+	percent = max_sum;
 	if(best_class != 5 && best_class != 0){
-		std::cout << best_class << std::endl;
+		std::cout << "not other or mug" << best_class << std::endl;
+		std::cout<< "sum is " <<max_sum <<std::endl;
 	}
- 
+	
+	//	std::cout << "after "<< best_class << std::endl;
+
+	cvReleaseMat( &weak_resp);
 
 	return Features::ImageType(best_class);
 
@@ -106,7 +115,7 @@ Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 }
 
 BoostTree::~BoostTree(){
-	
+
 	delete boost;
 	cvReleaseMat(&weak_responses);
 
