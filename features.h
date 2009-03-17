@@ -7,7 +7,7 @@
 #include <vector>
 
 #define HAARAMOUNT 57
-#define TYPECOUNT 6
+#define TYPECOUNT 5
 
 class Features{
 
