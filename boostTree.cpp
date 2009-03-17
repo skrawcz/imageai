@@ -32,6 +32,8 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 	CvMat* trainData, *testData = NULL;
 	CvMat* trainResponses = NULL, *testResponses = NULL;
 
+	// create graph means we are going to test our classifier on some portion of the data. Since our data does not come in in a random
+	// fashion we need to give some bits to training and some to test
 	if(createGraph){
 
 		int trainPercent = (int)(10.0 * CfgReader::getDouble("graphTrainTestRatio"));
@@ -45,10 +47,13 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 		int trainCount = 0;
 		int testCount = 0;
 
+		// for each row give some percentage to train some to test
 		for(int i = 0; i < examples->rows; i++ )
 		{
 			float* data_row = (float*)(examples->data.ptr + examples->step*i);
 			float* new_data_row = NULL;
+
+			// If train is not full we give it some values if i%10 is 1,2... up to train percent. If test is full just put the last few in train.
 			if((i%10 < trainPercent || testCount >= testData->rows) && trainCount < trainData->rows){
 
 				new_data_row = (float*)(trainData->data.ptr + trainData->step*trainCount);
@@ -71,7 +76,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 
 	}else{
 
-
+		// if we are not doing some testing of the results just make the trainData and trainResponses point to the actual data
   	trainData = examples;
   	trainResponses = imageTypes;
 
@@ -84,6 +89,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 
 		boost.push_back(new CvBoost);
 
+		// create a new responses matrix that contains booleans for this specific type we are classifying.
 		CvMat* new_responses = cvCreateMat( nsamples, 1, CV_32SC1 );
 
 		for(int i = 0; i < nsamples; i++ )
@@ -93,7 +99,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 
 		}
 
-		// 3. train classifier
+		// train classifier
 		std::cout << "Training the classifier (may take a few minutes)..." << std::endl;
 		boost.at(j)->train( trainData, CV_ROW_SAMPLE, new_responses, 0, 0, var_type, 0, 
 											CvBoostParams(type, weakCount, weightTrimRrate, maxDepth, useSurrogates, 0 ));
@@ -102,6 +108,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 		
 		printf("\n");
 
+		// save weak classifiers in vector for future classifications
 		weak_responses.push_back(cvCreateMat( 1, boost.at(j)->get_weak_predictors()->total, CV_32F ));
 
 	}
@@ -116,9 +123,10 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 		int goody, best_class;
 		double sum, max_sum;
 		int testTotalCount = 0, trainTotalCount = 0;
-		int testHr, trainHr;
+		int testHr = 0, trainHr = 0;
 
 		// compute prediction error on train and test data
+		// loop through images that are not of type other. Try to predict their type. Save results.
 		for(int i = 0; i < testData->rows; i++ )
 		{
 
@@ -140,17 +148,20 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 					}
 
 				}
-
+			
+				// save amount of images tested
 				testTotalCount++;
 
 				std::cout << best_class << " " << testResponses->data.i[i] << std::endl;
 
+				// save amount of correct results
 				testHr += best_class == testResponses->data.i[i];
 			}
 		}
 
 
 		// compute prediction error on train and train data
+		// loop through images that are not of type other. Try to predict their type. Save results.
 		for(int i = 0; i < trainData->rows; i++ )
 		{
 
@@ -173,10 +184,12 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 
 				}
 
+				// save amount of images tested
 				trainTotalCount++;
 
 				std::cout << best_class << " " << trainResponses->data.i[i] << std::endl;
 
+				// save amount of correct results
 				trainHr += best_class == trainResponses->data.i[i];
 			}
 		}
@@ -184,8 +197,14 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 		//test_hr /= (double)(nsamples_all-ntrain_samples);
 		//train_hr /= (double)ntrain_samples;
 
-		std::cout << (float)testHr/(float)testTotalCount << std::endl;
-		std::cout << (float)trainHr/(float)trainTotalCount << std::endl;
+		std::cout << "Testing accuracy: " << (float)testHr/(float)testTotalCount << std::endl;
+		std::cout << "Training accuracy: " << (float)trainHr/(float)trainTotalCount << std::endl;
+
+		cvReleaseMat(&trainData);
+		cvReleaseMat(&testData);
+		cvReleaseMat(&trainResponses);
+		cvReleaseMat(&testResponses);
+
 
 	}
 }
