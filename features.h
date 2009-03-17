@@ -35,6 +35,8 @@ public:
   };
 
 	void getHOGFeatures(const IplImage *im, CvMat* data, int item);
+	float* makeHistogram(std::vector<float> vect,std::vector<float>
+	mags,float normConst);
 
 	void getFeatures(const IplImage *im, CvMat *data, int item);
 
