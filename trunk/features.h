@@ -35,8 +35,7 @@ public:
     HaarType t;
   };
 
-	float* getHOGFeatures(const IplImage *im);
-	float* makeHistogram(std::vector<float> vect,std::vector<float>	mags,float normConst);
+	
 
 	void getFeatures(const IplImage *im, CvMat *data, int item, const	IplImage *realImg);
 	
@@ -133,8 +132,9 @@ private:
 	FeatureType featureType;
 
 
-	void getHaarFeatures(const IplImage *im, CvMat *data, int item);
-
+	void getHaarFeatures(const IplImage *im, CvMat *data, int item, int startIndex);
+	void getHOGFeatures(const IplImage *im, CvMat *data, int item, int startIndex);
+	float* makeHistogram(std::vector<float> vect,std::vector<float>	mags,float normConst);
 
 };
 

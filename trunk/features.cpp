@@ -12,15 +12,15 @@
 #define PI 3.14159265
 
 #define HAARAMOUNT 57
-#define HOGAMOUNT 64
+#define HOGAMOUNT 64*9
 //#define TYPECOUNT 5
 
 Features::Features(){
 
 	//we should probably make this some value we pass in
 	//	featureType = HAAR;
-	 	featureType = HOG;
-	//featureType = HAARHOG;
+	//featureType = HOG;
+	featureType = HAARHOG;
 
   readHaars();
 }
@@ -53,18 +53,23 @@ int Features::amountOfFeatures(){
 	//		return HAARAMOUNT + (HAARAMOUNT)%2;
 	switch(featureType){
 	case HAAR:
-		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
+		return HAARAMOUNT +(HAARAMOUNT)%2;
 		break;
 			
 	case HOG:
-		return HOGAMOUNT;
+		return HOGAMOUNT + (HOGAMOUNT)%2;;
 		break;
 			
 	case HAARHOG:
-		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
+		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT+HOGAMOUNT)%2;
+		break;
+	default:
+		std::cout<<"there was an error in the amount of features"
+						 <<" there is no such feature type";
+		return 0;
 		break;
 	}
-	return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
+
 
 }
 
@@ -73,20 +78,22 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 
 	float* ptrToFeatures;
 	if(featureType == HAAR){
-		getHaarFeatures(im, data, item);
+		getHaarFeatures(im, data, item,0);
 	}else if(featureType == HOG){
 		//getting the float array out and putting it into the matrix
-		ptrToFeatures=getHOGFeatures(realImg);
-		for(int i=0;i<HOGAMOUNT;i++){
-			cvSetReal2D( data,item,i,ptrToFeatures[i]);
-		}
+		//ptrToFeatures=getHOGFeatures(realImg);
+		//for(int i=0;i<HOGAMOUNT;i++){
+		//		cvSetReal2D( data,item,i,ptrToFeatures[i]);
+		//}
+		getHOGFeatures(realImg,data,item,0);
 	}else{
 		//TODO: make the two feature vectors concatenate onto each other
-		getHaarFeatures(im, data, item);
-		ptrToFeatures=getHOGFeatures(realImg);
-		for(int i=0;i<HAARAMOUNT+HOGAMOUNT;i++){
-			cvSetReal2D( data,item,i,ptrToFeatures[i]);
-		}
+		getHaarFeatures(im, data, item,0);
+		//ptrToFeatures=getHOGFeatures(realImg);
+		//for(int i=0;i<HAARAMOUNT+HOGAMOUNT;i++){
+		//	cvSetReal2D( data,item,i,ptrToFeatures[i]);
+		//}
+		getHOGFeatures(realImg,data,item,HAARAMOUNT);
 	}
 
 	
@@ -99,7 +106,8 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 
 }
 
-void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item){
+void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item,
+															 int startIndex){
 
 	std::vector<HaarFeature>::iterator it = haars.begin();
 
@@ -210,7 +218,8 @@ void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item){
 		++it;
 		
 		out = (z - 2*t)/z;
-		*( (float*)CV_MAT_ELEM_PTR( *data, item, i ) ) = fabs(out);
+		//*( (float*)CV_MAT_ELEM_PTR( *data, item, i ) ) = fabs(out);
+		cvSetReal2D( data,item,startIndex++,fabs(out));
 		//std::cout << "haar value = " << fabs(out) << std::endl;
 		++i;
 	}
@@ -269,8 +278,9 @@ Features::HaarFeature Features::strToHaar(const std::string &in){
 
 }
 
-//void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item){
-float* Features::getHOGFeatures(const IplImage *im){
+void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
+															int startIndex){
+//float* Features::getHOGFeatures(const IplImage *im){
 
 
 
@@ -427,13 +437,15 @@ float* Features::getHOGFeatures(const IplImage *im){
 		floats[q]=makeHistogram(v,mags,normConst);
 	}
 
-	float* featureArray;
-	featureArray = new float[numCells * 9];
+	//float* featureArray;
+	//	featureArray = new float[numCells * 9];
 	for(int q=0,idx=0;q<numCells;q++){
 		for(int k=0;k<9;k++){
 			float f = floats[q][k];
 			
-			featureArray[idx++]=f;
+			//			featureArray[idx++]=f;//
+			//std::cout<<"sIndex="<<startIndex<<std::endl;
+			cvSetReal2D( data,item,startIndex++,f);
 		}
 	}
 		//deallocate
@@ -450,8 +462,7 @@ float* Features::getHOGFeatures(const IplImage *im){
 		}
 		//			std::cout<<std::endl;
 	}
-	//TODO: actually return it:
-
+	
  
 	//==== display debugging stuff here=======
   //making display windows
@@ -479,7 +490,7 @@ float* Features::getHOGFeatures(const IplImage *im){
 	cvDestroyWindow("Smoothed IN image");
 	cvDestroyWindow("dx image");
 	cvDestroyWindow("dy image");*/
-	return featureArray;
+	//	return featureArray;
 
 }
 
