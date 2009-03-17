@@ -72,25 +72,32 @@ BoostTree::BoostTree(const char *filename){
 
 Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 
-	double sum, max_sum = 0;
+	double sum, max_sum = 0, tmppercent;
 	int best_class = Features::OTHER;
+
+
+	cvReleaseMat(&weak_responses);
+	weak_responses = cvCreateMat( 1, boost->get_weak_predictors()->total, CV_32F ); 
 
 	for(int j = 0; j < TYPECOUNT; j++ )
 	{
 		imageData->data.fl[Features::amountOfFeatures()] = (float)j;
-		boost->predict( imageData, 0, weak_responses );
+		tmppercent = boost->predict( imageData, 0, weak_responses );
 		sum = cvSum( weak_responses ).val[0];
 
 		if( max_sum < sum )
 		{
+			percent = tmppercent;
 			max_sum = sum;
 			best_class = j;
 		}
 	}
 
-	percent = 1.0;
+	//std::cout << percent << std::endl;
 
-	//std::cout << best_class << std::endl;
+	if(best_class != 5 && best_class != 0){
+		std::cout << best_class << std::endl;
+	}
  
 
 	return Features::ImageType(best_class);

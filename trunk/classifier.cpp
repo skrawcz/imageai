@@ -171,7 +171,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		}
 		cvReleaseImage(&gray);
 
-		//if(highestPercent > .9)
+		if(highestPercent > .9)
 			objects->push_back(obj);
 
 		return true;
@@ -244,6 +244,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			featureSet->getFeatures(integralo, imageData, i);
 			*( (int*)CV_MAT_ELEM_PTR( *imageTypes, i, 0 ) ) =  Features::stringToImageType(fileList.files[i].label);
 
+			std::cout << Features::stringToImageType(fileList.files[i].label) << std::endl;
 
 		  // free memory
 			//releasing gray (if the image was grayscale to begin with this
