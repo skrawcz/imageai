@@ -130,10 +130,9 @@ int CObject::overlap(const CObject& obj) const
 // percentage overlap
 double CObject::percentOverlap(const CObject& obj) const {
 
-	double overlps = overlap(obj);
-	double size = rect.width * rect.height + obj.rect.width * obj.rect.height;
+ 	CvRect overlappingRegion = this->intersect(obj);
 
-	return overlps / (size - overlps);
+	return overlappingRegion.width * overlappingRegion.height / rect.width * rect.height;
 
 }
 
@@ -175,14 +174,14 @@ void CObject::filterOverlap(std::vector<CObject>& src){
 
 	for(int i=0;i<src.size();++i){
 
-		//if(!src[i].killed){
+		if(!src[i].killed){
 			for(int j=i+1;j<src.size();++j){
 				//std::cout << src[i].percentOverlap(src[j]) << std::endl;
 				if(!src[j].killed && src[i].percentOverlap(src[j]) > overlapThreshold){
 					src[j].killed = true;
 				}
 			}
-			//	}
+		}
 	}
 
 	vector<CObject> tmp;
