@@ -27,7 +27,7 @@ public:
 
 	~BoostTree();
 
-	Features::ImageType classify(CvMat *imageData, double &percent);
+	Features::ImageType classify(CvMat *imageData, double *percent);
 
 	void print(const char *filename) {
 

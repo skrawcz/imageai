@@ -36,7 +36,7 @@ RandomTree::RandomTree(const char *filename){
 
 }
 
-Features::ImageType RandomTree::classify(CvMat *imageData, double &percent){
+Features::ImageType RandomTree::classify(CvMat *imageData, double *percent){
 
 
 
@@ -45,7 +45,7 @@ Features::ImageType RandomTree::classify(CvMat *imageData, double &percent){
 
 	if(pred != 5){
 		std::cout << pred << std::endl;
-		percent = 0.1;	
+		*percent = 0.1;	
 
 	}
 	return Features::ImageType(pred);

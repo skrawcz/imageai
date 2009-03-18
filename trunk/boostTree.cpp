@@ -239,9 +239,9 @@ BoostTree::BoostTree(const char *filename){
 
 }
 
-Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
+Features::ImageType BoostTree::classify(CvMat *imageData, double *percent){
 
-	double sum;
+	double maxSum;
 	int best_class = Features::OTHER, goody;
 
 
@@ -249,11 +249,11 @@ Features::ImageType BoostTree::classify(CvMat *imageData, double &percent){
 	{
 
 		goody = (int)boost.at(j)->predict( imageData, 0, weak_responses.at(j) );
-		sum = cvSum( weak_responses.at(j) ).val[0];
+		percent[j] = cvSum( weak_responses.at(j) ).val[0];
 
-		if( percent < sum && goody == 1)
+		if( maxSum < percent[j] && goody == 1)
 		{
-			percent = sum;
+			maxSum = percent[j];
 			best_class = j;
 		}
 	}
