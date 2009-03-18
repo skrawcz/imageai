@@ -175,14 +175,14 @@ void CObject::filterOverlap(std::vector<CObject>& src){
 
 	for(int i=0;i<src.size();++i){
 
-		if(!src[i].killed){
+		//if(!src[i].killed){
 			for(int j=i+1;j<src.size();++j){
 				//std::cout << src[i].percentOverlap(src[j]) << std::endl;
-				if(!src[j].killed && src[i].percentOverlap(src[j]) < overlapThreshold){
+				if(!src[j].killed && src[i].percentOverlap(src[j]) > overlapThreshold){
 					src[j].killed = true;
 				}
 			}
-		}
+			//	}
 	}
 
 	vector<CObject> tmp;

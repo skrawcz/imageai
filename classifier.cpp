@@ -44,6 +44,7 @@ CClassifier::CClassifier()
 		frameJump = CfgReader::getInt("frameJump");
 		
 
+
     // CS221 TO DO: add initialization for any member variables   
 }
     
@@ -103,7 +104,7 @@ bool CClassifier::saveState(const char *filename)
 // objects found (and their location).
 bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 {
-
+	
 		
 		if(frameCount % frameJump == 0){
 			assert((frame != NULL) && (objects != NULL));
@@ -151,13 +152,15 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			double percent[5];
 			double threshold = CfgReader::getDouble("isObjectThreshold");
 
+			//std::cout << threshold << std::endl;
+
 			//iterate through candidate frames
 			for (int x = 0; x <=320; x = x+8){
 				for (int y = 0; y<=240; y = y+8){
 					for (int w = 64; w<=320; w = w+8){
 						for (int h = 64 ; h<=240; h = h+8){
 							//check if we are out of frame & for milestone only take squares
-							if( (x+w <= gray->width) && (y+h <= gray->height) && h == w) {
+							if( (x+w <= gray->width) && (y+h <= gray->height) && isRatio(w,h)) {
 								//clip the image to the right size
 								CvRect region = cvRect(x,y,w,h);
 								IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
@@ -165,7 +168,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								cvSetImageROI(gray,region);
 								cvCopyImage(gray, clippedImage);
 								cvResetImageROI(gray);
-							
+
 								
 								//scale image to 64x64
 								IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
@@ -182,13 +185,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
 
 								if(tree){
-								
 
 									//classifiedImage =
 									tree->classify(imageData, percent);
 
 									for(int k=0; k<5;k++){
-									
+									//std::cout << percent[k] << std::endl;	
 										if(percent[k]> threshold){
 											//std::cout << percent[k] << std::endl;										
 											obj.rect = cvRect(x,y,w,h);
@@ -209,8 +211,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 									}
 									*/
 								}
-							
 
+							
+							//	std::cout<<"in loop"<<std::endl;
 								cvReleaseImage(&clippedImage);
 								cvReleaseImage(&resizedImage);
 								cvReleaseImage(&integralImage);
@@ -234,12 +237,24 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		}
 
 		frameCount++;			
-
-
-
+		//std::cout<<"returning"<<std::endl;
 		return true;
 
 }
+
+bool CClassifier::isRatio(int width, int height){
+	double ratio = ((double)width)/((double)height);
+	//if (ratio == 5/2 || ratio == 10/3 || ratio == 30/11 || ratio == 1){
+	if (ratio == 5/2 || ratio == 1){
+		return true;
+
+	}else{
+		return false;
+	}
+
+}
+
+
         
 // train
 // Trains the classifier to recognize the objects given in the
@@ -288,9 +303,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 
 			// doing this we simply avoid some of the "other" images 
+
 			if(subset == 1 || Features::stringToImageType(fileList.files[i].label) != 5 || (rand() % subset == 0 &&  imageData->rows - count > 284)) {
-
-
+				//if(Features::stringToImageType(fileList.files[i].label) != 1)
+				//	continue;
 				count++;
 
 				if(count >= imageData->rows)
