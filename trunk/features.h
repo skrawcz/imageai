@@ -37,7 +37,7 @@ public:
 
 	
 
-	void getFeatures(const IplImage *im, CvMat *data, int item, const	IplImage *realImg);
+	void getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *data, int item, const	IplImage *realImg);
 	
 	int amountOfFeatures();
 	bool amountOfFeaturesRounded();

@@ -152,7 +152,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			double percent[5];
 			double threshold = CfgReader::getDouble("isObjectThreshold");
 
-			//std::cout << threshold << std::endl;
+
+			IplImage *resizedImage = cvCreateImage(cvSize(64,64), gray->depth, gray->nChannels);
+			IplImage *integralImage = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
+			IplImage *IntegralImageSquare = cvCreateImage(cvSize(65, 65), IPL_DEPTH_64F, 1);
+			IplImage *IntegralImageTilted = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
+
 
 			//iterate through candidate frames
 			for (int x = 0; x <=320; x = x+8){
@@ -171,18 +176,13 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 								
 								//scale image to 64x64
-								IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
-																											 clippedImage->depth, 
-																											 clippedImage->nChannels);
+								
 								cvResize(clippedImage, resizedImage);
 					
 								//compute integral image
-								IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
-																															 resizedImage->height+1), 
-																												IPL_DEPTH_32S, 1);
-								cvIntegral(resizedImage, integralImage);
+								cvIntegral(resizedImage, integralImage, IntegralImageSquare, IntegralImageTilted);
 
-								featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
+								featureSet->getFeatures(integralImage, IntegralImageTilted, imageData, 0,resizedImage);
 
 								if(tree){
 
@@ -215,13 +215,16 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							
 							//	std::cout<<"in loop"<<std::endl;
 								cvReleaseImage(&clippedImage);
-								cvReleaseImage(&resizedImage);
-								cvReleaseImage(&integralImage);
+								
 							}
 						}
 					}
 				}
 			}
+
+			cvReleaseImage(&resizedImage);
+			cvReleaseImage(&integralImage);
+			cvReleaseImage(&IntegralImageSquare);
 
 			CObject::filterOverlap(*objects);
 
@@ -268,7 +271,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
     featureSet = new Features();	
 
 
-    IplImage *image, *smallImage, *integralo, *gray;
+    IplImage *image, *smallImage, *integralo, *gray, *integraloTilto, *integraloSquaro;
 
 		// figure out if a subset of images is wanted
 		int subset = CfgReader::strToInt(CfgReader::getValue("useSubset"));
@@ -292,6 +295,8 @@ bool CClassifier::train(TTrainingFileList& fileList)
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
+		integraloTilto = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
+		integraloSquaro = cvCreateImage(cvSize(65, 65), IPL_DEPTH_64F, 1);
 
     for (int i = 0;i < (int)fileList.files.size(); i++) { 
 								 //i < 20;++i){
@@ -336,10 +341,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				cvResize(gray, smallImage);
 
 				// create integral image
-				cvIntegral(smallImage, integralo);
+				cvIntegral(smallImage, integralo, integraloSquaro, integraloTilto);
 			
 
-				featureSet->getFeatures(integralo, imageData, count, smallImage);
+				featureSet->getFeatures(integralo, integraloTilto, imageData, count, smallImage);
 				//			featureSet->getHOGFeatures(smallImage,imageData,i);
 				//featureSet->getHOGFeatures(smallImage,imageData,i);
 

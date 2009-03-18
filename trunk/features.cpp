@@ -11,7 +11,7 @@
 #include <vector>
 #define PI 3.14159265
 
-#define HAARAMOUNT 57
+#define HAARAMOUNT 57*2
 #define HOGAMOUNT 64*9 //64*9
 #define HCORNERAMOUNT 1
 //#define TYPECOUNT 5
@@ -19,13 +19,15 @@
 Features::Features(){
 
 	//we should probably make this some value we pass in
-	//	featureType = HAAR;
-	featureType = HOG;
+	//featureType = HAAR;
+	//featureType = HOG;
 	//featureType = HAARHOG;
 	//featureType = HCORNER;
-	//featureType = ALL;
-	//featureType = HAARCORNER;
+	featureType = ALL;
+
+	//featureType = HAACORNER;
 	//featureType = HOGCORNER;
+
 	
   readHaars();
 }
@@ -103,7 +105,7 @@ int Features::amountOfFeatures(){
 }
 
 
-void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplImage *realImg){
+void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *data, int item, const IplImage *realImg){
 
 	float* ptrToFeatures;
 	if(featureType == HAAR){
@@ -118,6 +120,7 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 	}else if(featureType == HAARHOG){
 		//TODO: make the two feature vectors concatenate onto each other
 		getHaarFeatures(im, data, item,0);
+		getHaarFeatures(imTilt, data, item,HAARAMOUNT/2);
 		//ptrToFeatures=getHOGFeatures(realImg);
 		//for(int i=0;i<HAARAMOUNT+HOGAMOUNT;i++){
 		//	cvSetReal2D( data,item,i,ptrToFeatures[i]);
@@ -134,6 +137,7 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 		getHOGFeatures(realImg,data,item,HCORNERAMOUNT);
 	}else if(featureType == ALL){
 		getHaarFeatures(im, data, item,0);
+		getHaarFeatures(imTilt, data, item,HAARAMOUNT/2);
 		getHOGFeatures(realImg,data,item,HAARAMOUNT);
 		getHarrisCornerCount(realImg,data,item,HAARAMOUNT+HOGAMOUNT);
 	}else{
@@ -261,8 +265,12 @@ void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item,
 
 		}
 		++it;
-		
-		out = (z - 2*t)/z;
+		if(z != 0){
+			out = (z - 2*t)/z;
+		}else{
+			z = 0;
+		}		
+
 		//*( (float*)CV_MAT_ELEM_PTR( *data, item, i ) ) = fabs(out);
 		cvSetReal2D( data,item,startIndex++,fabs(out));
 		//std::cout << "haar value = " << fabs(out) << std::endl;
