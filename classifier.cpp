@@ -91,10 +91,10 @@ bool CClassifier::loadState(const char *filename)
 bool CClassifier::saveState(const char *filename)
 {
     assert(filename != NULL);
-    
+    //std::cout<<"in save state 1"<<std::endl;
     if(tree == NULL)	
 			return false;
-
+    //std::cout<<"in save state 2"<<std::endl;
 
     return Classer::printToXML(filename, tree);
 }
@@ -197,7 +197,16 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 											obj.label = Features::imageTypeToString(Features::ImageType(k));
 											obj.score = percent[k];
 											obj.type = k;
-											objects->push_back(obj);
+                      if (obj.type == Features::MUG || obj.type == Features::CLOCK){
+                        if(w==h){
+                          objects->push_back(obj);
+                        }
+                          
+                      }else{
+                        if(w!=h){
+                          objects->push_back(obj);
+                        }
+                      }											
 										}
 									}
 
@@ -379,9 +388,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		tree = Classer::create(imageData, imageTypes);
 		std::cout << "finished with tree" << std::endl;
 
-
 		cvReleaseMat(&imageData);
 		cvReleaseMat(&imageTypes);
+
 		
 
     return true;
