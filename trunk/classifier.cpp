@@ -196,6 +196,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 											obj.rect = cvRect(x,y,w,h);
 											obj.label = Features::imageTypeToString(Features::ImageType(k));
 											obj.score = percent[k];
+											obj.type = k;
 											objects->push_back(obj);
 										}
 									}
@@ -226,6 +227,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			cvReleaseImage(&integralImage);
 			cvReleaseImage(&IntegralImageSquare);
 
+			
+			CObject::boostScores(*objects, previousObjects, dx, dy);
 			CObject::filterOverlap(*objects);
 
 			// save values

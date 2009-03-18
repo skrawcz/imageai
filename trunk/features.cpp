@@ -11,7 +11,7 @@
 #include <vector>
 #define PI 3.14159265
 
-#define HAARAMOUNT 57*2
+#define HAARAMOUNT 57//*2
 #define HOGAMOUNT 64*9 //64*9
 #define HCORNERAMOUNT 1
 //#define TYPECOUNT 5
@@ -19,11 +19,11 @@
 Features::Features(){
 
 	//we should probably make this some value we pass in
-	//featureType = HAAR;
+	featureType = HAAR;
 	//featureType = HOG;
 	//featureType = HAARHOG;
 	//featureType = HCORNER;
-	featureType = ALL;
+	//featureType = ALL;
 
 	//featureType = HAACORNER;
 	//featureType = HOGCORNER;
@@ -110,6 +110,7 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
 	float* ptrToFeatures;
 	if(featureType == HAAR){
 		getHaarFeatures(im, data, item,0);
+		//getHaarFeatures(imTilt, data, item,HAARAMOUNT/2);
 	}else if(featureType == HOG){
 		//getting the float array out and putting it into the matrix
 		//ptrToFeatures=getHOGFeatures(realImg);
@@ -132,6 +133,7 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
 	}else if(featureType == HAARCORNER){
 		getHarrisCornerCount(realImg,data,item,0);
 		getHaarFeatures(im, data, item,HCORNERAMOUNT);
+		getHaarFeatures(imTilt, data, item,HCORNERAMOUNT + HAARAMOUNT/2);
 	}else if(featureType == HOGCORNER){
 		getHarrisCornerCount(realImg,data,item,0);
 		getHOGFeatures(realImg,data,item,HCORNERAMOUNT);

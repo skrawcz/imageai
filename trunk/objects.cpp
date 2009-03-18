@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include "CfgReader.h"
+#include <math.h>
 
 using namespace std;
 
@@ -26,6 +27,8 @@ CObject::CObject()
     // do nothing
 		score = 0;
 		killed = false;
+		useful = false;
+		type = 5;
 }
 
 // copy constructor
@@ -35,6 +38,8 @@ CObject::CObject(const CObject& obj)
     label = obj.label;
 		score = obj.score;
 		killed = obj.killed;
+		useful = obj.useful;
+		type = obj.type;
 }
 
 // full constructor
@@ -46,6 +51,8 @@ CObject::CObject(const CvRect& r, const string &s)
 		// lest something breaks
 		score = 0;
 		killed = false;
+		useful = false;
+		type = 5;
 }
 
 // destructor
@@ -132,7 +139,9 @@ double CObject::percentOverlap(const CObject& obj) const {
 
  	CvRect overlappingRegion = this->intersect(obj);
 
-	return overlappingRegion.width * overlappingRegion.height / rect.width * rect.height;
+	double minArea = std::min( rect.width * rect.height, obj.rect.width * obj.rect.height);
+
+	return (double)(overlappingRegion.width * overlappingRegion.height) / minArea;
 
 }
 
@@ -143,21 +152,111 @@ CObject& CObject::operator=(const CObject& obj)
     label = obj.label;
 		score = obj.score;
 		killed = obj.killed;
+		useful = obj.useful;
+		type = obj.type;
     
     return *this;
 }
 
-void CObject::copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest){
+void CObject::copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest, int limit){
 
-
+	int counter = 0;
 	dest.clear();
 
 	for(int i=0;i<src.size();++i){
 
-		if(!src[i].killed)
+		if(!src[i].killed){
 			dest.push_back(src[i]);
+			++counter;
+		}
+		if(counter == limit)
+			break;
 
 	}
+}
+
+void CObject::boostScores(std::vector<CObject>& newVec, std::vector<CObject>& oldVec, float dx, float dy){
+
+	vector<CObject> tmp;
+
+	// limit size
+	copyOverwrite(newVec, tmp, 40);
+
+
+	CObject egon;
+	std::sort(tmp.begin(), tmp.end(), egon);
+
+
+	//for(unsigned i=0;i<tmp.size();++i)
+	//	std::cout << tmp[i].score << " ";
+
+	//std::cout << std::endl;
+
+	// do same type boosting so that two boxes of same type get a boost.
+	for(unsigned i=0;i<tmp.size();++i){
+
+		float tmpSize = tmp[i].rect.width*tmp[i].rect.height;
+
+		tmp[i].score *= log(tmpSize);
+
+		for(unsigned j=i;j<tmp.size();++j){
+			
+			
+			// if close in size
+			if(tmp[i].type == tmp[j].type && fabs(tmpSize - tmp[j].rect.width*tmp[j].rect.height) < 0.1*tmpSize){
+				
+				// if high level of overlap
+				if(tmp[i].percentOverlap(tmp[j]) > .9){
+					//std::cout << "simple boost" << std::endl;
+					tmp[i].score *= 1.1;
+			
+				}
+			}
+		}
+	}
+
+
+
+	CvRect newRect, oldRect;
+
+	// boost on similarity with previous frame
+	for(unsigned i=0;i<tmp.size();++i){
+
+		newRect = tmp[i].rect;
+
+		for(unsigned j=0;j<oldVec.size();++j){
+
+			
+			oldRect = oldVec[j].rect;
+
+			float tmpSize = newRect.width*newRect.height;
+			
+			// if close in size
+			if(tmp[i].type == oldVec[j].type && fabs(tmpSize - oldRect.width * oldRect.height) < 0.1*tmpSize){
+				
+				// if high level of overlap
+				if(tmp[i].percentOverlap(oldVec[j]) > .9){
+
+					if((newRect.x - oldRect.x > 0) == (dx > 0)){
+						if((newRect.y - oldRect.y > 0) == (dy > 0)){
+							//std::cout << "uber boost" << std::endl;
+							tmp[i].score = (tmp[i].score + oldVec[j].score)*.5*1.3;
+						}
+					}			
+				}
+			}
+		}
+	}
+
+
+
+	//for(unsigned i=0;i<tmp.size();++i)
+	//	std::cout << tmp[i].score << " ";
+
+	//std::cout << std::endl;
+
+	copyOverwrite(tmp, newVec);
+
 }
 
 
@@ -176,7 +275,7 @@ void CObject::filterOverlap(std::vector<CObject>& src){
 
 		if(!src[i].killed){
 			for(int j=i+1;j<src.size();++j){
-				//std::cout << src[i].percentOverlap(src[j]) << std::endl;
+				std::cout << src[i].percentOverlap(src[j]) << std::endl;
 				if(!src[j].killed && src[i].percentOverlap(src[j]) > overlapThreshold){
 					src[j].killed = true;
 				}
