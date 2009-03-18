@@ -27,6 +27,7 @@ public:
     CvRect rect;            // object's bounding box
     std::string label;      // object's class
 		double score;
+		bool killed;
 
 public:
     // constructors

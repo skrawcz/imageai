@@ -60,6 +60,7 @@ private:
 		std::vector<Classer*> classifiers;
     Features *featureSet;
 		IplImage *gray;
+		int frameCount, frameJump;
 
 		CObjectList previousObjects;
 };
