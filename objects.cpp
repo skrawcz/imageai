@@ -197,7 +197,7 @@ void CObject::boostScores(std::vector<CObject>& newVec, std::vector<CObject>& ol
 
 		float tmpSize = tmp[i].rect.width*tmp[i].rect.height;
 
-		tmp[i].score *= log(tmpSize);
+		//tmp[i].score *= log(tmpSize);
 
 		for(unsigned j=i;j<tmp.size();++j){
 			
@@ -275,7 +275,7 @@ void CObject::filterOverlap(std::vector<CObject>& src){
 
 		if(!src[i].killed){
 			for(int j=i+1;j<src.size();++j){
-				std::cout << src[i].percentOverlap(src[j]) << std::endl;
+				//std::cout << src[i].percentOverlap(src[j]) << std::endl;
 				if(!src[j].killed && src[i].percentOverlap(src[j]) > overlapThreshold){
 					src[j].killed = true;
 				}
@@ -286,7 +286,7 @@ void CObject::filterOverlap(std::vector<CObject>& src){
 	vector<CObject> tmp;
 
 	copyOverwrite(src, tmp);
-	copyOverwrite(tmp, src);
+	copyOverwrite(tmp, src, 3);
 
 
 }

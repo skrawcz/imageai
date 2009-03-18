@@ -63,7 +63,7 @@ private:
 
 		int frameCount, frameJump;
 
-		CObjectList previousObjects;
+		CObjectList previousObjects, tmpDisplayObjects;
 		bool isRatio(int width, int height);
 };
 
