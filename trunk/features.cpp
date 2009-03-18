@@ -12,7 +12,7 @@
 #include "CfgReader.h"
 #define PI 3.14159265
 
-#define HAARAMOUNT 57
+#define HAARAMOUNT 147
 #define HOGAMOUNT 64*9 //64*9
 #define RIHOGAMOUNT 64*9 //64*9
 #define HCORNERAMOUNT 1
