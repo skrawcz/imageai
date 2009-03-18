@@ -18,7 +18,7 @@ public:
 
 	// add more types ! :) 
 	enum FeatureType{
-		HAAR, HOG, HAARHOG
+		HAAR, HOG, HAARHOG, HCORNER,ALL
 	};
 
 	// make very sure other is last!
@@ -136,6 +136,7 @@ private:
 	void getHOGFeatures(const IplImage *im, CvMat *data, int item, int startIndex);
 	float* makeHistogram(std::vector<float> vect,std::vector<float>	mags,float normConst);
 
+	void getHarrisCornerCount(const IplImage *im, CvMat *data, int item, int startIndex);
 };
 
 #endif
