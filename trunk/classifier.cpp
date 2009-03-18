@@ -229,16 +229,17 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 			
 			CObject::boostScores(*objects, previousObjects, dx, dy);
+			CObject::copyOverwrite(*objects, previousObjects);
 			CObject::filterOverlap(*objects);
 
 			// save values
-			CObject::copyOverwrite(*objects, previousObjects);
+			CObject::copyOverwrite(*objects, tmpDisplayObjects);
 
 		// skipping frame
 		}else{
 
 			// save previous objects
-			CObject::copyOverwrite(previousObjects, *objects);
+			CObject::copyOverwrite(tmpDisplayObjects, *objects);
 
 		}
 

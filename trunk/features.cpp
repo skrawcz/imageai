@@ -11,7 +11,7 @@
 #include <vector>
 #define PI 3.14159265
 
-#define HAARAMOUNT 57//*2
+#define HAARAMOUNT 57*2
 #define HOGAMOUNT 64*9 //64*9
 #define HCORNERAMOUNT 1
 //#define TYPECOUNT 5
@@ -110,7 +110,7 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
 	float* ptrToFeatures;
 	if(featureType == HAAR){
 		getHaarFeatures(im, data, item,0);
-		//getHaarFeatures(imTilt, data, item,HAARAMOUNT/2);
+		getHaarFeatures(imTilt, data, item,HAARAMOUNT/2);
 	}else if(featureType == HOG){
 		//getting the float array out and putting it into the matrix
 		//ptrToFeatures=getHOGFeatures(realImg);
