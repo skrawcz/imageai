@@ -26,6 +26,7 @@ class CObject {
 public:
     CvRect rect;            // object's bounding box
     std::string label;      // object's class
+		double score;
 
 public:
     // constructors
@@ -40,11 +41,21 @@ public:
     void writeAsXML(std::ostream&);
     void draw(IplImage *, CvScalar, CvFont *);
     CvRect intersect(const CObject&) const;
-    int overlap(const CObject&) const;  
+    int overlap(const CObject&) const;
+		double percentOverlap(const CObject&) const;
     int area() const { return rect.width * rect.height; }
 
     // operators
     CObject& operator=(const CObject&);
+
+		bool operator() (const CObject& a,const CObject& b) { return (a.score>b.score);}		
+
+		// some vector operations
+		static void copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest);
+		static void filterOverlap(std::vector<CObject>& src);
+
+
+
 };
 
 /* CObjectList class ---------------------------------------------------------

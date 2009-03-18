@@ -13,6 +13,9 @@
 
 #include "objects.h"
 
+#include <algorithm>
+#include "CfgReader.h"
+
 using namespace std;
 
 // CObject class -------------------------------------------------------------
@@ -21,6 +24,7 @@ using namespace std;
 CObject::CObject()
 {
     // do nothing
+		score = 0;
 }
 
 // copy constructor
@@ -28,6 +32,7 @@ CObject::CObject(const CObject& obj)
 {
     rect = obj.rect;
     label = obj.label;
+		score = obj.score;
 }
 
 // full constructor
@@ -35,6 +40,9 @@ CObject::CObject(const CvRect& r, const string &s)
 {
     rect = r;
     label = s;
+
+		// lest something breaks
+		score = 0;
 }
 
 // destructor
@@ -116,12 +124,78 @@ int CObject::overlap(const CObject& obj) const
     return (overlappingRegion.width * overlappingRegion.height);
 }
 
+// percentage overlap
+double CObject::percentOverlap(const CObject& obj) const {
+
+
+	return overlap(obj) / (rect.width * rect.height);
+
+}
+
 // assignment operator
 CObject& CObject::operator=(const CObject& obj)
 {
     rect = obj.rect;
     label = obj.label;
+		score = obj.score;
     
     return *this;
 }
+
+void CObject::copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest){
+
+
+	dest.clear();
+
+	for(int i=0;i<src.size();++i){
+
+		dest.push_back(src[i]);
+
+	}
+}
+
+
+void CObject::filterOverlap(std::vector<CObject>& src){
+
+	CObject egon;
+	std::sort(src.begin(), src.end(), egon);
+
+	std::vector<CObject> out;
+
+	double overlapThreshold = CfgReader::getDouble("boxOverlapThreshold");
+
+	std::vector<CObject>::iterator it;
+
+	for(int i=1;i<src.size();++i){
+		
+		it = src.begin() + i;
+	
+
+		//std::cout << src.size() << std::endl;
+		
+		while(it != src.end()){
+			
+			if(src[i].percentOverlap(*it) > overlapThreshold){
+				src.erase(it);
+			}else{
+				++it;
+			}
+		}
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
