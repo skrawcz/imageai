@@ -430,7 +430,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	for(int q=0;q<numCells;q++){
 		std::vector<float> inputs;	
 		std::vector<float> mags;
-		for(int j=0;j<(cellWidth*cellWdith);j++){//64 as things are 8x8
+		for(int j=0;j<(cellWidth*cellWidth);j++){//64 as things are 8x8
 
 			inputs.push_back(cellOPtr[q][j]);
 			mags.push_back(cellMPtr[q][j]);
