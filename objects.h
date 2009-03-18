@@ -28,6 +28,8 @@ public:
     std::string label;      // object's class
 		double score;
 		bool killed;
+		bool useful;
+		int type;
 
 public:
     // constructors
@@ -52,8 +54,9 @@ public:
 		bool operator() (const CObject& a,const CObject& b) { return (a.score>b.score);}		
 
 		// some vector operations
-		static void copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest);
+		static void copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest, int limit=-1);
 		static void filterOverlap(std::vector<CObject>& src);
+		static void boostScores(std::vector<CObject>& newVec, std::vector<CObject>& oldVec, float dx, float dy);
 
 
 
