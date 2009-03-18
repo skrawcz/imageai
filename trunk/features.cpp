@@ -631,6 +631,8 @@ void Features::getHarrisCornerCount(const IplImage *im, CvMat *data, int item,
 	//cvWaitKey( 0 );
 	
 	//====== releasing stuff============
+	cvReleaseImage(&eI);
+	cvReleaseImage(&tI);
 	//killing display windows
 	//cvDestroyWindow("HCorner IN image");
 	delete corners;
