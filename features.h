@@ -18,7 +18,8 @@ public:
 
 	// add more types ! :) 
 	enum FeatureType{
-		HAAR, HOG, HAARHOG, HCORNER, HOGCORNER, HAARCORNER, ALL
+		HAAR, HAARTILT, HAAR_HAARTILT,HOGN, HOGUN, HOGRI, HAAR_HOG, HCORNER, 
+		HAAR_HCORNER, HOG_HCORNER, HAAR_HOG_HCORNER
 	};
 
 	// make very sure other is last!
@@ -130,13 +131,27 @@ private:
   //void applyHaar(const IplImage *im, HaarOutput *haary);
 
 	FeatureType featureType;
+	int numOfFeatures;
+	bool needToPadFeature;
 
+	void getHaarFeatures(const IplImage *im, CvMat *data, int item, int
+	startIndex);
+	void getHOGFeatures(const IplImage *im, CvMat *data, int item, int
+											startIndex, bool RI, bool normalize);
 
-	void getHaarFeatures(const IplImage *im, CvMat *data, int item, int startIndex);
-	void getHOGFeatures(const IplImage *im, CvMat *data, int item, int startIndex);
-	float* makeHistogram(std::vector<float> vect,std::vector<float>	mags,float normConst);
+	void getNormHOGFeatures(const IplImage *im, CvMat *data, int item, int
+													startIndex);
+	void getUnNormHOGFeatures(const IplImage *im, CvMat *data, int item, int
+													startIndex);
 
-	void getHarrisCornerCount(const IplImage *im, CvMat *data, int item, int startIndex);
+	void getRINormHOGFeatures(const IplImage *im, CvMat *data, int item, int
+														startIndex);
+	float* makeHistogram(std::vector<float> vect,std::vector<float>
+														mags,bool normalize);
+	
+	void getHarrisCornerCount(const IplImage *im, CvMat *data, int item, int
+	startIndex);
+
 };
 
 #endif
