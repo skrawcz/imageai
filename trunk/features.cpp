@@ -12,7 +12,7 @@
 #define PI 3.14159265
 
 #define HAARAMOUNT 57
-#define HOGAMOUNT 64*9
+#define HOGAMOUNT 64*9 //64*9
 #define HCORNERAMOUNT 1
 //#define TYPECOUNT 5
 
@@ -23,7 +23,9 @@ Features::Features(){
 	//featureType = HOG;
 	//featureType = HAARHOG;
 	//featureType = HCORNER;
-	featureType = ALL;
+	//featureType = ALL;
+	//featureType = HAACORNER;
+	featureType = HOGCORNER;
 	
   readHaars();
 }
@@ -33,22 +35,28 @@ Features::~Features(){
 }
 
 bool Features::amountOfFeaturesRounded(){
-		//		return (HAARAMOUNT)%2;
+	//		return (HAARAMOUNT)%2;
 	switch(featureType){
-		case HAAR:
-			return (HAARAMOUNT)%2;
-			//break;
+	case HAAR:
+		return (HAARAMOUNT)%2;
+		//break;
 			
-		case HOG:
-			return (HOGAMOUNT)%2;
-			//break;
+	case HOG:
+		return (HOGAMOUNT)%2;
+		//break;
 			
-		case HAARHOG:
-			return (HAARAMOUNT + HOGAMOUNT)%2;
-			//	break;
+	case HAARHOG:
+		return (HAARAMOUNT + HOGAMOUNT)%2;
+		//	break;
 			
 	case HCORNER:
 		return (HCORNERAMOUNT)%2;
+		
+	case HOGCORNER:
+		return (HOGAMOUNT + HCORNERAMOUNT)%2;
+		
+	case HAARCORNER:
+		return (HAARAMOUNT + HCORNERAMOUNT)%2;
 
 	case ALL:
 		return (HAARAMOUNT + HOGAMOUNT+ HCORNERAMOUNT)%2;
@@ -75,6 +83,12 @@ int Features::amountOfFeatures(){
 
 	case HCORNER:
 		return HCORNERAMOUNT + (HCORNERAMOUNT)%2;
+		
+	case HOGCORNER:
+		return HOGAMOUNT + HCORNERAMOUNT+  (HOGAMOUNT + HCORNERAMOUNT)%2;
+		
+	case HAARCORNER:
+		return HAARAMOUNT + HCORNERAMOUNT+ (HAARAMOUNT + HCORNERAMOUNT)%2;
 
 	case ALL:
 		return HAARAMOUNT + HOGAMOUNT+ HCORNERAMOUNT+ (HAARAMOUNT + HOGAMOUNT+ HCORNERAMOUNT)%2;
@@ -112,7 +126,12 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 	}else if(featureType == HCORNER){
 		getHarrisCornerCount(realImg,data,item,0);
 
-		
+	}else if(featureType == HAARCORNER){
+		getHarrisCornerCount(realImg,data,item,0);
+		getHaarFeatures(im, data, item,HCORNERAMOUNT);
+	}else if(featureType == HOGCORNER){
+		getHarrisCornerCount(realImg,data,item,0);
+		getHOGFeatures(realImg,data,item,HCORNERAMOUNT);
 	}else if(featureType == ALL){
 		getHaarFeatures(im, data, item,0);
 		getHOGFeatures(realImg,data,item,HAARAMOUNT);
@@ -125,7 +144,7 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 	
 	// if the amount of features is uneven then make sure last element is set to zero
 	if(amountOfFeaturesRounded()){
-
+		//	std::cout<<"rounded features"<<std::endl;
 		//		*( (float*)CV_MAT_ELEM_PTR( *data, item, amountOfFeatures() - 1 ) ) = 0.0f;
 		cvSetReal2D(data,item,amountOfFeatures()-1,0.0f);
 	}
@@ -157,84 +176,84 @@ void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item,
 		//this goes through the haar features and computes
 		// the area computation has been checked by Stefan - written by Filip
 		switch (it->t){
-			case hH:
+		case hH:
 
-				// bottom part (y + h/2) + (y+h,x+w) - (y+h/2,x+w) - (y+h,x)
-				// + (y+h/2,x)
-				t  = cvGetReal2D(im, it->y + it->h/2,		it->x);
-				// + (y+h,x+w)
-				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-				// - (y+h/2,x+w)
-				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w);
-				// - (y+h,x)
-				t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
+			// bottom part (y + h/2) + (y+h,x+w) - (y+h/2,x+w) - (y+h,x)
+			// + (y+h/2,x)
+			t  = cvGetReal2D(im, it->y + it->h/2,		it->x);
+			// + (y+h,x+w)
+			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+			// - (y+h/2,x+w)
+			t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w);
+			// - (y+h,x)
+			t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
 
-
-			break;
-			case hV:
-
-				// right part    (y,x+w/2) + (y+h,x+w) - (y,x+w) - (y+h,x + w/2)
-				// + (y,x+w/2)
-				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
-				// + (y+h,x+w)
-				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-				// - (y,x+w)
-				t -= cvGetReal2D(im, it->y,							it->x + it->w);
-				// - (y+h,x+w/2)
-				t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w/2);
 
 			break;
-			case hD:
+		case hV:
 
-				// top right part (y,x+w/2) + (y+h/2,x+w) - (y + h/2, x + w/2) - (y,x + w)
-				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
-				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
-				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y,	 						it->x + it->w);
-
-				// bottom left part ( y+h, x + w/2) + (y + h/2, x) - (y+h,x) - (y + h/2, x + w/2)
-				t2  = cvGetReal2D(im, it->y + it->h/2,	it->x);
-				t2 += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
-				t2 -= cvGetReal2D(im, it->y + it->h,		it->x);
-				t2 -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w/2);
-
-				t += t2;
+			// right part    (y,x+w/2) + (y+h,x+w) - (y,x+w) - (y+h,x + w/2)
+			// + (y,x+w/2)
+			t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
+			// + (y+h,x+w)
+			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+			// - (y,x+w)
+			t -= cvGetReal2D(im, it->y,							it->x + it->w);
+			// - (y+h,x+w/2)
+			t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w/2);
 
 			break;
-			case hTL:
+		case hD:
+
+			// top right part (y,x+w/2) + (y+h/2,x+w) - (y + h/2, x + w/2) - (y,x + w)
+			t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
+			t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
+			t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
+			t -= cvGetReal2D(im, it->y,	 						it->x + it->w);
+
+			// bottom left part ( y+h, x + w/2) + (y + h/2, x) - (y+h,x) - (y + h/2, x + w/2)
+			t2  = cvGetReal2D(im, it->y + it->h/2,	it->x);
+			t2 += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+			t2 -= cvGetReal2D(im, it->y + it->h,		it->x);
+			t2 -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w/2);
+
+			t += t2;
+
+			break;
+		case hTL:
 				
-				// top left part (y,x) + (y+h/2,x+w/2) - (y+h/2,x) - (y,x+w/2)
-				t  = cvGetReal2D(im, it->y,							it->x);
-				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y + it->h/2,		it->x);
-				t -= cvGetReal2D(im, it->y,						 	it->x + it->w/2);
+			// top left part (y,x) + (y+h/2,x+w/2) - (y+h/2,x) - (y,x+w/2)
+			t  = cvGetReal2D(im, it->y,							it->x);
+			t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
+			t -= cvGetReal2D(im, it->y + it->h/2,		it->x);
+			t -= cvGetReal2D(im, it->y,						 	it->x + it->w/2);
 
 			break;
-			case hTR:
+		case hTR:
 
-				// top right part (y,x+w/2) + (y+h/2,x+w) - (y + h/2, x + w/2) - (y,x + w)
-				t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
-				t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
-				t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y,	 						it->x + it->w);
-
-			break;
-			case hBL:
-
-				// bottom left part ( y+h, x + w/2) + (y + h/2, x) - (y+h,x) - (y + h/2, x + w/2)
-				t  = cvGetReal2D(im, it->y + it->h/2,	it->x);
-				t += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y + it->h,		it->x);
-				t -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w/2);
+			// top right part (y,x+w/2) + (y+h/2,x+w) - (y + h/2, x + w/2) - (y,x + w)
+			t  = cvGetReal2D(im, it->y,							it->x + it->w/2);
+			t += cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
+			t -= cvGetReal2D(im, it->y + it->h/2,		it->x + it->w/2);
+			t -= cvGetReal2D(im, it->y,	 						it->x + it->w);
 
 			break;
-			case hBR:
+		case hBL:
 
-				// bottom right part (y+h,x+w) + (y+h/2,x+w/2) - (y+h,x+w/2) - (y+h/2,x+w)
-				t  = cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
-				t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-				t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w/2);
-				t -= cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
+			// bottom left part ( y+h, x + w/2) + (y + h/2, x) - (y+h,x) - (y + h/2, x + w/2)
+			t  = cvGetReal2D(im, it->y + it->h/2,	it->x);
+			t += cvGetReal2D(im, it->y + it->h,	 	it->x + it->w/2);
+			t -= cvGetReal2D(im, it->y + it->h,		it->x);
+			t -= cvGetReal2D(im, it->y + it->h/2,	it->x + it->w/2);
+
+			break;
+		case hBR:
+
+			// bottom right part (y+h,x+w) + (y+h/2,x+w/2) - (y+h,x+w/2) - (y+h/2,x+w)
+			t  = cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w/2);
+			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
+			t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w/2);
+			t -= cvGetReal2D(im, it->y + it->h/2,	 	it->x + it->w);
 			
 			break;
 
@@ -306,7 +325,7 @@ Features::HaarFeature Features::strToHaar(const std::string &in){
 
 void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 															int startIndex){
-//float* Features::getHOGFeatures(const IplImage *im){
+	//float* Features::getHOGFeatures(const IplImage *im){
 
 
 
@@ -366,17 +385,19 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	//std::cout<<"x,y = "<<dstx->height<<","<<dstx->width<<std::endl;
 	//need to setup data arrays to store data to make histograms from
 	//to capture strong edges, need to weight them by the magnitude
-	int numCells = 8*8;
+
+	int width=64;
+	int height=64;
+	int cellWidth=8;
+	float normConst=0.0f;
+
+	int numCells = width/cellWidth*width/cellWidth;
 	float *cellOPtr[numCells];
 	float *cellMPtr[numCells];
 	//not doing overlaping anymore, just doing simple method
 	//this points to the 15, as they are 8x8 and we
 	//move them over ever 4  cells
 
-	int width=64;
-	int height=64;
-	int cellWidth=8;
-	float normConst=0.0f;
 	
 	float *oCell;
 	float *mCell;
@@ -387,7 +408,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	//this is so we can compute histogram input
 	for(int i=0; i< numCells;i++){
 	
-		int start = i*cellWidth+(i/8)*7*width;
+		int start = i*cellWidth+(i/cellWidth)*(cellWidth-1)*width;
 			
 		mCell = new float[cellWidth*cellWidth];
 		oCell = new float[cellWidth*cellWidth];
@@ -396,11 +417,11 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 		//std::cout<<"i = "<<i<<" start = "<<start<<std::endl;
 		
 		//		for(int j=start +width;j<start*width + cellWidth;++j){
-		for(int j=0; j<8;j++){
+		for(int j=0; j<cellWidth;j++){
 			int rowStart = start + j*width;			
 			//std::cout<<"rowStart= "<<rowStart<<std::endl;
 			//std::cout<<"j = "<<j<<"< "<<start*width+cellWidth<<std::endl;
-			for(int k=0; k<8; k++){
+			for(int k=0; k<cellWidth; k++){
 				int pos = rowStart+k;
 				//				std::cout<<"pos ="<<pos<<std::endl;
 				/*if(pos > 4095){
@@ -565,7 +586,7 @@ float* Features::makeHistogram(std::vector<float> ovect,std::vector<float>
 
 void Features::getHarrisCornerCount(const IplImage *im, CvMat *data, int item,
 																	 int startIndex){
-	int MAX_CORNERS = 35;
+	int MAX_CORNERS = 40;
 	//IplImage* gray= cvCreateImage(cvSize(im->width,im->height), IPL_DEPTH_8U, 1);
   //cvCvtColor(im, gray, CV_BGR2GRAY);
 
@@ -592,7 +613,7 @@ void Features::getHarrisCornerCount(const IplImage *im, CvMat *data, int item,
 
 	int corner_count = MAX_CORNERS;
 	double qual_level=0.1;
-	double min_distance=10; //in number of pixels;
+	double min_distance=9; //in number of pixels;
 
 	//getting corners
   cvGoodFeaturesToTrack(im,eI,tI,corners,&corner_count,

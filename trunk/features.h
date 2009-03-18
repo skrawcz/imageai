@@ -18,7 +18,7 @@ public:
 
 	// add more types ! :) 
 	enum FeatureType{
-		HAAR, HOG, HAARHOG, HCORNER,ALL
+		HAAR, HOG, HAARHOG, HCORNER, HOGCORNER, HAARCORNER, ALL
 	};
 
 	// make very sure other is last!
