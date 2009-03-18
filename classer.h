@@ -17,7 +17,7 @@ public:
 	static Classer * createFromXML(const char* filename);
 	static bool printToXML(const char *filename, Classer *t);
 
-	virtual Features::ImageType classify(CvMat *imageData, double &percent) = 0;
+	virtual Features::ImageType classify(CvMat *imageData, double *percent) = 0;
 
 	virtual ~Classer() {};
 

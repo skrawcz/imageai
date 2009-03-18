@@ -114,6 +114,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		CObject obj;
 
 		double highestPercent = 0.01;
+		double percent[5];
+		double threshold = 1.5;//CfgReader::getDouble("threshold");
+
 
 		//iterate through candidate frames
 		for (int x = 0; x <=320; x = x+8){
@@ -149,12 +152,23 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 							featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
 
 							if(tree){
-								double percent = 0.0;
-
-								classifiedImage = tree->classify(imageData, percent);
-
 								
-								//test this image
+
+								//classifiedImage =
+								tree->classify(imageData, percent);
+
+								for(int k=0; k<5;k++){
+									
+									if(percent[k]> threshold){
+										std::cout << percent[k] << std::endl;										
+										obj.rect = cvRect(x,y,w,h);
+										obj.label = Features::imageTypeToString(Features::ImageType(k));
+
+										objects->push_back(obj);
+									}
+								}
+
+								/*test this image
 								if (classifiedImage != Features::OTHER && percent > highestPercent){
 						
 									highestPercent = percent;
@@ -163,6 +177,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 									obj.label = Features::imageTypeToString(classifiedImage);
 									
 								}
+								*/
 							}
 							
 
@@ -177,7 +192,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		cvReleaseImage(&gray);
 
 		//if(highestPercent > .9)
-			objects->push_back(obj);
+			
 
 		return true;
 
@@ -206,8 +221,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		// create cv matrix that has a row of features for every image
 		//CvMat *imageData = cvCreateMat((int)fileList.files.size(),
 		//Features::amountOfFeatures(), CV_32FC1);
-		std::cout<<"there are this many features"<<featureSet->amountOfFeatures()<<std::endl;
-		CvMat *imageData = cvCreateMat((int)fileList.files.size(), featureSet->amountOfFeatures(), CV_32FC1);
+		std::cout<<"there are this many features "<<featureSet->amountOfFeatures()<<std::endl;
+
+		CvMat *imageData = cvCreateMat((int)(fileList.files.size()/subset), featureSet->amountOfFeatures(), CV_32FC1);
 
 		// keep track of type of image
 		CvMat *imageTypes = cvCreateMat((int)(fileList.files.size()/subset), 1, CV_32SC1);
@@ -229,7 +245,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 
 			// doing this we simply avoid some of the "other" images 
-			if(Features::stringToImageType(fileList.files[i].label) != 5 || (rand() % subset == 0 &&  imageData->rows - count > 284)) {
+			if(subset == 1 || Features::stringToImageType(fileList.files[i].label) != 5 || (rand() % subset == 0 &&  imageData->rows - count > 284)) {
 
 
 				count++;
@@ -264,7 +280,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				cvIntegral(smallImage, integralo);
 			
 
-				featureSet->getFeatures(integralo, imageData, count,smallImage);
+				featureSet->getFeatures(integralo, imageData, count, smallImage);
 				//			featureSet->getHOGFeatures(smallImage,imageData,i);
 				//featureSet->getHOGFeatures(smallImage,imageData,i);
 
