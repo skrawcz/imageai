@@ -40,6 +40,8 @@ CClassifier::CClassifier()
     parameters = NULL;
 		tree = NULL;
 		gray = NULL;
+		frameCount = 0;
+		frameJump = CfgReader::getInt("frameJump");
 		
 
     // CS221 TO DO: add initialization for any member variables   
@@ -102,123 +104,138 @@ bool CClassifier::saveState(const char *filename)
 bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 {
 
-		assert((frame != NULL) && (objects != NULL));
+		
+		if(frameCount % frameJump == 0){
+			assert((frame != NULL) && (objects != NULL));
 
-		IplImage *oldGray = NULL;
+			IplImage *oldGray = NULL;
 
-		if(gray != NULL){
+			if(gray != NULL){
 
-			oldGray = gray;//cvCreateImage(cvGetSize(gray),IPL_DEPTH_8U,1);
-			//cvCopy(gray, oldGray);
-		}
+				oldGray = gray;//cvCreateImage(cvGetSize(gray),IPL_DEPTH_8U,1);
+				//cvCopy(gray, oldGray);
+			}
 
-		//convert to gray scale
-		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
-		cvCvtColor(frame,gray,CV_BGR2GRAY);
+			//convert to gray scale
+			gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
+			cvCvtColor(frame,gray,CV_BGR2GRAY);
 
-		double dx=0, dy=0;
+			double dx=0, dy=0;
 
-		// calc optical flow stuff
-		if(oldGray != NULL){
+			// calc optical flow stuff
+			if(oldGray != NULL){
 
-			CvMat *dxMat = cvCreateMat(gray->height, gray->width, CV_32FC1);
-			CvMat *dyMat = cvCreateMat(gray->height, gray->width, CV_32FC1);
+				CvMat *dxMat = cvCreateMat(gray->height, gray->width, CV_32FC1);
+				CvMat *dyMat = cvCreateMat(gray->height, gray->width, CV_32FC1);
 
-			cvCalcOpticalFlowLK(gray, oldGray, cvSize(5,5), dxMat, dyMat);
+				cvCalcOpticalFlowLK(gray, oldGray, cvSize(5,5), dxMat, dyMat);
 
-			dx = cvAvg(dxMat).val[0];
-			dy = cvAvg(dyMat).val[0];
+				dx = cvAvg(dxMat).val[0];
+				dy = cvAvg(dyMat).val[0];
 
-			cvReleaseMat(&dxMat);
-			cvReleaseMat(&dyMat);
-			cvReleaseImage(&oldGray);
+				cvReleaseMat(&dxMat);
+				cvReleaseMat(&dyMat);
+				cvReleaseImage(&oldGray);
 
-			std::cout << dx << " " << dy << std::endl;
+				//std::cout << dx << " " << dy << std::endl;
 
-		}
+			}
 
-		// feature vector of image plus one in size to work with boost
-		//		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
-		CvMat *imageData = cvCreateMat(1, featureSet->amountOfFeatures(), CV_32F);
+			// feature vector of image plus one in size to work with boost
+			//		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
+			CvMat *imageData = cvCreateMat(1, featureSet->amountOfFeatures(), CV_32F);
 
 
-		CObject obj;
+			CObject obj;
 
-		double percent[5];
-		double threshold = CfgReader::getDouble("boxOverlapThreshold");
+			double percent[5];
+			double threshold = CfgReader::getDouble("isObjectThreshold");
 
-		//iterate through candidate frames
-		for (int x = 0; x <=320; x = x+8){
-			for (int y = 0; y<=240; y = y+8){
-				for (int w = 64; w<=320; w = w+8){
-					for (int h = 64 ; h<=240; h = h+8){
-						//check if we are out of frame & for milestone only take squares
-						if( (x+w <= gray->width) && (y+h <= gray->height) && h == w) {
-							//clip the image to the right size
-							CvRect region = cvRect(x,y,w,h);
-							IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
-																										 gray->depth, gray->nChannels);
-							cvSetImageROI(gray,region);
-							cvCopyImage(gray, clippedImage);
-							cvResetImageROI(gray);
+			//iterate through candidate frames
+			for (int x = 0; x <=320; x = x+8){
+				for (int y = 0; y<=240; y = y+8){
+					for (int w = 64; w<=320; w = w+8){
+						for (int h = 64 ; h<=240; h = h+8){
+							//check if we are out of frame & for milestone only take squares
+							if( (x+w <= gray->width) && (y+h <= gray->height) && h == w) {
+								//clip the image to the right size
+								CvRect region = cvRect(x,y,w,h);
+								IplImage *clippedImage = cvCreateImage(cvSize(region.width, region.height), 
+																											 gray->depth, gray->nChannels);
+								cvSetImageROI(gray,region);
+								cvCopyImage(gray, clippedImage);
+								cvResetImageROI(gray);
 							
 								
-							//scale image to 64x64
-							IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
-																										 clippedImage->depth, 
-																										 clippedImage->nChannels);
-							cvResize(clippedImage, resizedImage);
+								//scale image to 64x64
+								IplImage *resizedImage = cvCreateImage(cvSize(64,64), 
+																											 clippedImage->depth, 
+																											 clippedImage->nChannels);
+								cvResize(clippedImage, resizedImage);
 					
-							//compute integral image
-							IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
-																														 resizedImage->height+1), 
-																											IPL_DEPTH_32S, 1);
-							cvIntegral(resizedImage, integralImage);
+								//compute integral image
+								IplImage *integralImage = cvCreateImage(cvSize(resizedImage->width+1, 
+																															 resizedImage->height+1), 
+																												IPL_DEPTH_32S, 1);
+								cvIntegral(resizedImage, integralImage);
 
-							featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
+								featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
 
-							if(tree){
+								if(tree){
 								
 
-								//classifiedImage =
-								tree->classify(imageData, percent);
+									//classifiedImage =
+									tree->classify(imageData, percent);
 
-								for(int k=0; k<5;k++){
+									for(int k=0; k<5;k++){
 									
-									if(percent[k]> threshold){
-										//std::cout << percent[k] << std::endl;										
-										obj.rect = cvRect(x,y,w,h);
-										obj.label = Features::imageTypeToString(Features::ImageType(k));
-										obj.score = percent[k];
-										objects->push_back(obj);
+										if(percent[k]> threshold){
+											//std::cout << percent[k] << std::endl;										
+											obj.rect = cvRect(x,y,w,h);
+											obj.label = Features::imageTypeToString(Features::ImageType(k));
+											obj.score = percent[k];
+											objects->push_back(obj);
+										}
 									}
-								}
 
-								/*test this image
-								if (classifiedImage != Features::OTHER && percent > highestPercent){
+									/*test this image
+									if (classifiedImage != Features::OTHER && percent > highestPercent){
 						
-									highestPercent = percent;
-									//std::cout << classifiedImage << std::endl;
-									obj.rect = cvRect(x,y,w,h);
-									obj.label = Features::imageTypeToString(classifiedImage);
+										highestPercent = percent;
+										//std::cout << classifiedImage << std::endl;
+										obj.rect = cvRect(x,y,w,h);
+										obj.label = Features::imageTypeToString(classifiedImage);
 									
+									}
+									*/
 								}
-								*/
-							}
 							
 
-							cvReleaseImage(&clippedImage);
-							cvReleaseImage(&resizedImage);
-							cvReleaseImage(&integralImage);
+								cvReleaseImage(&clippedImage);
+								cvReleaseImage(&resizedImage);
+								cvReleaseImage(&integralImage);
+							}
 						}
 					}
 				}
 			}
+
+			CObject::filterOverlap(*objects);
+
+			// save values
+			CObject::copyOverwrite(*objects, previousObjects);
+
+		// skipping frame
+		}else{
+
+			// save previous objects
+			CObject::copyOverwrite(previousObjects, *objects);
+
 		}
 
-		CObject::filterOverlap(*objects);
+		frameCount++;			
 
-		CObject::copyOverwrite(*objects, previousObjects);
+
 
 		return true;
 

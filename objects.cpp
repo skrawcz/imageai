@@ -25,6 +25,7 @@ CObject::CObject()
 {
     // do nothing
 		score = 0;
+		killed = false;
 }
 
 // copy constructor
@@ -33,6 +34,7 @@ CObject::CObject(const CObject& obj)
     rect = obj.rect;
     label = obj.label;
 		score = obj.score;
+		killed = obj.killed;
 }
 
 // full constructor
@@ -43,6 +45,7 @@ CObject::CObject(const CvRect& r, const string &s)
 
 		// lest something breaks
 		score = 0;
+		killed = false;
 }
 
 // destructor
@@ -127,8 +130,10 @@ int CObject::overlap(const CObject& obj) const
 // percentage overlap
 double CObject::percentOverlap(const CObject& obj) const {
 
+	double overlps = overlap(obj);
+	double size = rect.width * rect.height + obj.rect.width * obj.rect.height;
 
-	return overlap(obj) / (rect.width * rect.height);
+	return overlps / (size - overlps);
 
 }
 
@@ -138,6 +143,7 @@ CObject& CObject::operator=(const CObject& obj)
     rect = obj.rect;
     label = obj.label;
 		score = obj.score;
+		killed = obj.killed;
     
     return *this;
 }
@@ -149,7 +155,8 @@ void CObject::copyOverwrite(const std::vector<CObject>& src, std::vector<CObject
 
 	for(int i=0;i<src.size();++i){
 
-		dest.push_back(src[i]);
+		if(!src[i].killed)
+			dest.push_back(src[i]);
 
 	}
 }
@@ -163,25 +170,25 @@ void CObject::filterOverlap(std::vector<CObject>& src){
 	std::vector<CObject> out;
 
 	double overlapThreshold = CfgReader::getDouble("boxOverlapThreshold");
+	//std::cout << overlapThreshold << std::endl;
 
-	std::vector<CObject>::iterator it;
 
-	for(int i=1;i<src.size();++i){
-		
-		it = src.begin() + i;
-	
+	for(int i=0;i<src.size();++i){
 
-		//std::cout << src.size() << std::endl;
-		
-		while(it != src.end()){
-			
-			if(src[i].percentOverlap(*it) > overlapThreshold){
-				src.erase(it);
-			}else{
-				++it;
+		if(!src[i].killed){
+			for(int j=i+1;j<src.size();++j){
+				//std::cout << src[i].percentOverlap(src[j]) << std::endl;
+				if(!src[j].killed && src[i].percentOverlap(src[j]) < overlapThreshold){
+					src[j].killed = true;
+				}
 			}
 		}
 	}
+
+	vector<CObject> tmp;
+
+	copyOverwrite(src, tmp);
+	copyOverwrite(tmp, src);
 
 
 }
