@@ -59,5 +59,8 @@ private:
 		Classer *tree;
 		std::vector<Classer*> classifiers;
     Features *featureSet;
+		IplImage *gray;
+
+		CObjectList previousObjects;
 };
 

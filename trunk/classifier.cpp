@@ -39,6 +39,7 @@ CClassifier::CClassifier()
     rng = cvRNG(-1);
     parameters = NULL;
 		tree = NULL;
+		gray = NULL;
 		
 
     // CS221 TO DO: add initialization for any member variables   
@@ -56,6 +57,9 @@ CClassifier::~CClassifier()
 
     if(featureSet != NULL)
       delete featureSet;
+
+		if(gray != NULL)
+			cvReleaseImage(&gray);
 }
 
 // loadState
@@ -75,7 +79,6 @@ bool CClassifier::loadState(const char *filename)
 
 		//saveState("bongo.xml");
 
-		std::cout << "wefgsfdsf" << std::endl;
 
     return true;
 }
@@ -101,10 +104,38 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		assert((frame != NULL) && (objects != NULL));
 
+		IplImage *oldGray = NULL;
+
+		if(gray != NULL){
+
+			oldGray = gray;//cvCreateImage(cvGetSize(gray),IPL_DEPTH_8U,1);
+			//cvCopy(gray, oldGray);
+		}
+
 		//convert to gray scale
-		IplImage *gray;
 		gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		cvCvtColor(frame,gray,CV_BGR2GRAY);
+
+		double dx=0, dy=0;
+
+		// calc optical flow stuff
+		if(oldGray != NULL){
+
+			CvMat *dxMat = cvCreateMat(gray->height, gray->width, CV_32FC1);
+			CvMat *dyMat = cvCreateMat(gray->height, gray->width, CV_32FC1);
+
+			cvCalcOpticalFlowLK(gray, oldGray, cvSize(5,5), dxMat, dyMat);
+
+			dx = cvAvg(dxMat).val[0];
+			dy = cvAvg(dyMat).val[0];
+
+			cvReleaseMat(&dxMat);
+			cvReleaseMat(&dyMat);
+			cvReleaseImage(&oldGray);
+
+			std::cout << dx << " " << dy << std::endl;
+
+		}
 
 		// feature vector of image plus one in size to work with boost
 		//		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
@@ -113,10 +144,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 		CObject obj;
 
-		double highestPercent = 0.01;
 		double percent[5];
-		double threshold = 1.5;//CfgReader::getDouble("threshold");
-
+		double threshold = CfgReader::getDouble("boxOverlapThreshold");
 
 		//iterate through candidate frames
 		for (int x = 0; x <=320; x = x+8){
@@ -146,9 +175,6 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 																											IPL_DEPTH_32S, 1);
 							cvIntegral(resizedImage, integralImage);
 
-							Features::ImageType classifiedImage = Features::OTHER;
-
-
 							featureSet->getFeatures(integralImage, imageData, 0,resizedImage);
 
 							if(tree){
@@ -160,10 +186,10 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 								for(int k=0; k<5;k++){
 									
 									if(percent[k]> threshold){
-										std::cout << percent[k] << std::endl;										
+										//std::cout << percent[k] << std::endl;										
 										obj.rect = cvRect(x,y,w,h);
 										obj.label = Features::imageTypeToString(Features::ImageType(k));
-
+										obj.score = percent[k];
 										objects->push_back(obj);
 									}
 								}
@@ -189,10 +215,10 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 				}
 			}
 		}
-		cvReleaseImage(&gray);
 
-		//if(highestPercent > .9)
-			
+		CObject::filterOverlap(*objects);
+
+		CObject::copyOverwrite(*objects, previousObjects);
 
 		return true;
 

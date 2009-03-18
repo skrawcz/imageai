@@ -79,9 +79,9 @@ void CfgReader::setUpCfg(const char *dir){
 void CfgReader::readMainConfig(){
 
 
-	std::ifstream myfile ("configs/mainConfig.cfg");
+	readConfig("configs/basic.cfg");
 
-	if (myfile.is_open()){
+	/*if (myfile.is_open()){
 
 		std::string line;
 		getline(myfile,line);
@@ -92,7 +92,7 @@ void CfgReader::readMainConfig(){
 	}else
 		std::cout << "unable to open main cfg" << std::endl;
 
-	myfile.close();
+	myfile.close();*/
 
 }
 
