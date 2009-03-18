@@ -237,9 +237,10 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			cvReleaseImage(&IntegralImageSquare);
 
 			
-			CObject::boostScores(*objects, previousObjects, dx, dy);
-			CObject::copyOverwrite(*objects, previousObjects);
-			CObject::filterOverlap(*objects);
+			//CObject::boostScores(*objects, previousObjects, dx, dy);
+			//CObject::copyOverwrite(*objects, previousObjects);
+			//CObject::filterOverlap(*objects);
+			CObject::stefansOverlap(*objects,3);
 
 			// save values
 			CObject::copyOverwrite(*objects, tmpDisplayObjects);
