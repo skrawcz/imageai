@@ -20,12 +20,12 @@ Features::Features(){
 
 	//we should probably make this some value we pass in
 	//	featureType = HAAR;
-	//featureType = HOG;
+	featureType = HOG;
 	//featureType = HAARHOG;
 	//featureType = HCORNER;
 	//featureType = ALL;
-	//featureType = HAACORNER;
-	featureType = HOGCORNER;
+	//featureType = HAARCORNER;
+	//featureType = HOGCORNER;
 	
   readHaars();
 }
