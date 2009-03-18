@@ -117,7 +117,7 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
  		break;
 	case HAAR_HOG:
 		getHaarFeatures(im, data, item,0);
-		getNormHOGFeatures(realImg,data,item,HAARAMOUNT);
+		getUnNormHOGFeatures(realImg,data,item,HAARAMOUNT);
 		break;
 	case HCORNER:
 		getHarrisCornerCount(realImg,data,item,0);
@@ -128,11 +128,11 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
 		break;
 	case HOG_HCORNER:
 		getHarrisCornerCount(realImg,data,item,0);
-		getNormHOGFeatures(realImg,data,item,HCORNERAMOUNT);
+		getUnNormHOGFeatures(realImg,data,item,HCORNERAMOUNT);
 		break;
 	case HAAR_HOG_HCORNER:
 		getHaarFeatures(im, data, item,0);
-		getNormHOGFeatures(realImg,data,item,HAARAMOUNT);
+		getUnNormHOGFeatures(realImg,data,item,HAARAMOUNT);
 		getHarrisCornerCount(realImg,data,item,HAARAMOUNT+HOGAMOUNT);
 		break;
 	default:
