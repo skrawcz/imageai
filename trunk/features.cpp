@@ -13,6 +13,7 @@
 
 #define HAARAMOUNT 57
 #define HOGAMOUNT 64*9
+#define HCORNERAMOUNT 1
 //#define TYPECOUNT 5
 
 Features::Features(){
@@ -20,8 +21,10 @@ Features::Features(){
 	//we should probably make this some value we pass in
 	//	featureType = HAAR;
 	//featureType = HOG;
-	featureType = HAARHOG;
-
+	//featureType = HAARHOG;
+	//featureType = HCORNER;
+	featureType = ALL;
+	
   readHaars();
 }
 
@@ -43,7 +46,13 @@ bool Features::amountOfFeaturesRounded(){
 		case HAARHOG:
 			return (HAARAMOUNT + HOGAMOUNT)%2;
 			//	break;
-		}
+			
+	case HCORNER:
+		return (HCORNERAMOUNT)%2;
+
+	case ALL:
+		return (HAARAMOUNT + HOGAMOUNT+ HCORNERAMOUNT)%2;
+	}
 	return false;
 }
 
@@ -63,6 +72,12 @@ int Features::amountOfFeatures(){
 	case HAARHOG:
 		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT+HOGAMOUNT)%2;
 		break;
+
+	case HCORNER:
+		return HCORNERAMOUNT + (HCORNERAMOUNT)%2;
+
+	case ALL:
+		return HAARAMOUNT + HOGAMOUNT+ HCORNERAMOUNT+ (HAARAMOUNT + HOGAMOUNT+ HCORNERAMOUNT)%2;
 	default:
 		std::cout<<"there was an error in the amount of features"
 						 <<" there is no such feature type";
@@ -86,7 +101,7 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 		//		cvSetReal2D( data,item,i,ptrToFeatures[i]);
 		//}
 		getHOGFeatures(realImg,data,item,0);
-	}else{
+	}else if(featureType == HAARHOG){
 		//TODO: make the two feature vectors concatenate onto each other
 		getHaarFeatures(im, data, item,0);
 		//ptrToFeatures=getHOGFeatures(realImg);
@@ -94,6 +109,17 @@ void Features::getFeatures(const IplImage *im, CvMat *data, int item, const IplI
 		//	cvSetReal2D( data,item,i,ptrToFeatures[i]);
 		//}
 		getHOGFeatures(realImg,data,item,HAARAMOUNT);
+	}else if(featureType == HCORNER){
+		getHarrisCornerCount(realImg,data,item,0);
+
+		
+	}else if(featureType == ALL){
+		getHaarFeatures(im, data, item,0);
+		getHOGFeatures(realImg,data,item,HAARAMOUNT);
+		getHarrisCornerCount(realImg,data,item,HAARAMOUNT+HOGAMOUNT);
+	}else{
+
+		std::cout<<"Woops, something screwed up"<<std::endl;
 	}
 
 	
@@ -534,4 +560,79 @@ float* Features::makeHistogram(std::vector<float> ovect,std::vector<float>
 	}
 	//	std::cout<<std::endl;
 	return hist;
+}
+
+
+void Features::getHarrisCornerCount(const IplImage *im, CvMat *data, int item,
+																	 int startIndex){
+	int MAX_CORNERS = 35;
+	//IplImage* gray= cvCreateImage(cvSize(im->width,im->height), IPL_DEPTH_8U, 1);
+  //cvCvtColor(im, gray, CV_BGR2GRAY);
+
+	//gray = cvCloneImage(im);
+	CvSize src_size = cvGetSize (im);
+
+	// create temporary images to store the two image derivatives
+	//CvMat *eI = cvCreateMat (src_size.height, src_size.width, CV_32SC1);
+	IplImage *eI=cvCreateImage(src_size,IPL_DEPTH_32F, 1);
+	//CvMat *tI = cvCreateMat (src_size.height, src_size.width, CV_32SC1);
+	IplImage *tI = cvCreateImage(src_size,IPL_DEPTH_32F, 1);
+
+	//	cvSobel (gray, dx, 1, 0, APETURE_SIZE);
+	//cvSobel (gray, dy, 0, 1, APETURE_SIZE);
+
+
+	// Setup the buffers
+	//harris_responce = cvCloneImage (image);
+
+	// This array will store all corners found in the image
+	//CvPoint2D32f *corners = (CvPoint2D32f*)cvAlloc (MAX_CORNERS * sizeof
+	//(corners));
+	CvPoint2D32f* corners = new CvPoint2D32f[ MAX_CORNERS ];
+
+	int corner_count = MAX_CORNERS;
+	double qual_level=0.1;
+	double min_distance=10; //in number of pixels;
+
+	//getting corners
+  cvGoodFeaturesToTrack(im,eI,tI,corners,&corner_count,
+															 qual_level, min_distance);
+  
+	
+	cvSetReal2D( data,item,startIndex++,(float)corner_count);
+
+
+
+
+
+
+//==== display debugging stuff here=======
+
+
+	CvFont font;
+	double hScale=1.0;
+	double vScale=1.0;
+	int    lineWidth=1;
+	//cvInitFont(&font,CV_FONT_HERSHEY_SIMPLEX|CV_FONT_ITALIC,
+	//	hScale,vScale,0,lineWidth);
+	//std::cout<<"num corners = "<<corner_count<<std::endl;
+	for(int i=0;i < corner_count ; i++){
+		//cvPutText (im,"C",corners[i], &font, cvScalar(255,255,0));
+		//std::cout<<corners[i].x<<","<<corners[i].y<<std::endl;
+	}
+
+
+  //making display windows
+	//	cvNamedWindow("HCorner IN image");
+	//showing images
+	//cvShowImage("HCorner IN image",im);
+	//showing x and y gradient images
+	
+	//cvWaitKey( 0 );
+	
+	//====== releasing stuff============
+	//killing display windows
+	//cvDestroyWindow("HCorner IN image");
+	delete corners;
+	//	return featureArray;
 }
