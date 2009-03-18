@@ -108,8 +108,10 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
 		break;
 	case HOGN:
 		getNormHOGFeatures(realImg,data,item,0);
+		break;
 	case HOGUN:
 		getUnNormHOGFeatures(realImg,data,item,0);
+		break;
 	case HOGRI:
 		getRINormHOGFeatures(realImg,data,item,0);
  		break;
@@ -325,17 +327,20 @@ Features::HaarFeature Features::strToHaar(const std::string &in){
 //gets the normalized HOG features
 void Features::getNormHOGFeatures(const IplImage *im, CvMat *data, int item,
 															int startIndex){
+	//std::cout<<"called Norm"<<std::endl;
 	getHOGFeatures(im,data,item,startIndex,false,true);
 }
 //gets the unnormalized HOG features
 void Features::getUnNormHOGFeatures(const IplImage *im, CvMat *data, int item,
 															int startIndex){
+	//std::cout<<"called Un norm"<<std::endl;
 	getHOGFeatures(im,data,item,startIndex,false,false);
 
 }
 //gets the normalized RI HOG features
 void Features::getRINormHOGFeatures(const IplImage *im, CvMat *data, int item,
 															int startIndex){
+	//std::cout<<"called RI"<<std::endl;
 	getHOGFeatures(im,data,item,startIndex,true,true);
 }
 
@@ -394,6 +399,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	int height=64;
 	int cellWidth=8;
 	int numCells = width/cellWidth*width/cellWidth;
+	//std::cout<<"numCells = "<< numCells<<std::endl;
 	float *cellOPtr[numCells];
 	float *cellMPtr[numCells];
 	float *oCell;
@@ -417,6 +423,9 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 				int pos = rowStart+k;
 				mCell[idx] = magnitudes[pos];
 				oCell[idx++] = orientations[pos];
+				if(pos >4095){
+					std::cout<< "Error!!!!!"<<std::endl;
+				}
 			}
 		}
 		cellOPtr[i]=oCell;
@@ -449,6 +458,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	}
 	//Checking wther we are doing RI stuff
 	if(RI){
+		//std::cout<<"in here"<<std::endl;
 		for(int q=0,idx=0;q<numCells;q++){	
 		//finding highest peak in histogram
 			float max=-1.0f;
@@ -473,12 +483,16 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 			}
 		}
 	}else{
+		//std::cout<<"no RI"<<std::endl;
 		//if not doing RI stuff added the features
 		for(int q=0,idx=0;q<numCells;q++){
+			//std::cout<<"hist = ";
 			for(int k=0;k<9;k++){
 				float f = floats[q][k];
+				//	std::cout<<f<<" ";
 				cvSetReal2D( data,item,startIndex++,f);
 			}
+			// 	std::cout<<std::endl;
 		}
 	}
 		//deallocate
@@ -536,8 +550,9 @@ float* Features::makeHistogram(std::vector<float> ovect,std::vector<float>
 			sum = sum + hist[i]*hist[i];
 		}
 		float normC= sqrt(sum);
+		//std::cout<<"normalizing by "<<normC<<std::endl;
 		for(int i=0; i<numBins; i++){
-			hist[i] = normC * hist[i];
+			hist[i] = 1/normC * hist[i];
 		}
 	}
 	return hist;

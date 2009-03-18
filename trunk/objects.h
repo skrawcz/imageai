@@ -57,7 +57,7 @@ public:
 		static void copyOverwrite(const std::vector<CObject>& src, std::vector<CObject>& dest, int limit=-1);
 		static void filterOverlap(std::vector<CObject>& src);
 		static void boostScores(std::vector<CObject>& newVec, std::vector<CObject>& oldVec, float dx, float dy);
-
+		static void stefansOverlap(std::vector<CObject>& src, int num);
 
 
 };
