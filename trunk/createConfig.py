@@ -44,6 +44,6 @@ featureType=%s \n" % \
 fname = "configs/test.cfg"
 f = open(fname,'w')
 
-print("writing to file %s \n" %fname)
+#print("writing to file %s \n" %fname)
 f.write(txtString)
 f.close()
