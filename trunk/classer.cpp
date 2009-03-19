@@ -21,8 +21,6 @@ Classer * Classer::create(CvMat *examples, CvMat *imageTypes, Features::ImageTyp
 	findClassifierTypeFromCFG();
 
 
-
-
 	if(classifierType == BOOST){
 
 
@@ -31,10 +29,11 @@ Classer * Classer::create(CvMat *examples, CvMat *imageTypes, Features::ImageTyp
 
 
 
-	}//else if(classifierType == BAGGING){
-
+	}else if(classifierType = RANDOM){
 		
-	//}
+		return new RandomTree(examples,imageTypes);
+
+	}
 
 	/*
 
@@ -61,19 +60,17 @@ Classer * Classer::create(CvMat *examples, CvMat *imageTypes, Features::ImageTyp
 
 Classer * Classer::createFromXML(const char* filename){
 
-	//std::ifstream ifs ( filename, std::ifstream::in );
-	//std::string current;
+	findClassifierTypeFromCFG();
 
-	// figure out what type of classifier we are using
-	//CXMLParser::getNextValue(ifs, current);
-	//classifierType = (ClassifierType)atoi(current.c_str());
-
-
-	//if(classifierType == BOOST){
+	if(classifierType == BOOST){
 
 		return new BoostTree(filename);
 
-	//}
+	}else if(classifierType = RANDOM){
+		
+		return new RandomTree(filename);
+
+	}
 
 /*
 	if(classifierType == SINGLE){

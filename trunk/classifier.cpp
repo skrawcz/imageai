@@ -110,7 +110,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		readStuff=true;
 	}
 		
-		if(frameCount % frameJump == 0 && frameCount > 150){
+		if(frameCount % frameJump == 0){// && frameCount > 150){
 			assert((frame != NULL) && (objects != NULL));
 
 			IplImage *oldGray = NULL;

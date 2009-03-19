@@ -1,7 +1,7 @@
 #include "features.h"
 
 #include "randomTree.h"
-
+#include "CfgReader.h"
 
 RandomTree::RandomTree(CvMat *examples, CvMat *imageTypes){
 
@@ -11,10 +11,13 @@ RandomTree::RandomTree(CvMat *examples, CvMat *imageTypes){
 	cvSet( var_type, cvScalarAll(CV_VAR_ORDERED) );
 	cvSetReal1D( var_type, examples->cols, CV_VAR_CATEGORICAL );
 
+	// some values
+	int weakCount = CfgReader::getInt("boostWeakCount");
+	int maxDepth = CfgReader::getInt("boostMaxDepth");
 
 	// 3. train classifier
 	forest.train( examples, CV_ROW_SAMPLE, imageTypes, 0, 0, var_type, 0,
-	CvRTParams(10,10,0,false,15,0,true,4,100,0.01f,CV_TERMCRIT_ITER));
+	CvRTParams(maxDepth,10,0,false,15,0,true,4,weakCount,0.01f,CV_TERMCRIT_ITER));
 
 
 
