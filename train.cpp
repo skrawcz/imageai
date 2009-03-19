@@ -112,7 +112,6 @@ int main(int argc, char *argv[])
 		cerr << "ERROR: could not train classifier" << endl;
 		exit(-1);
   }
-
   // save classifier configuration
 	if (configurationFile != NULL) {
 		if (!classifier.saveState(configurationFile)) {
