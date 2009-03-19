@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Setting script to run"
 
-CLASSIFIER="BOOST"
+CLASSIFIER="boost"
 BOOSTTYPE="0 1 3"
 BOOSTWEAKCOUNT="50 75 100 125 150"
 BOOSTTRIMWEIGHT="0.8 0.85 0.9 0.95"
@@ -29,11 +29,12 @@ do
 														python createConfig.py $classifier $boosttype $boostweakcount $boosttrimweight $boostmaxdepth $boostusesurrogates $feature
 												
 
-														sleep 20
+														sleep 5
 														echo "nohup ./train -c tester.out config/test.cfg >>	$MACHINENAME.$feature.txt"
-														nohup ./train -c tester.out configs/test.cfg >>	$MACHINENAME.$feature.txt
+														nohup ./train -c tester.out configs/basic.cfg >>	$MACHINENAME.$feature.txt
 														#nohup echo "monkey" >> $MACHINENAME.$feature.txt
 														let COUNTER=COUNTER+1
+														rm -f configs/basic.cfg
 												done
 										done
 								done
