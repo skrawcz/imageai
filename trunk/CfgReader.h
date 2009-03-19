@@ -32,7 +32,8 @@ private:
 	static std::map<std::string, std::string> values;
 
 	// make sure to only read cfg once.
-	static bool cfgRead;
+	static bool cfgRead;
+
 
 
 };
