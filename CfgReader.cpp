@@ -12,6 +12,7 @@ void CfgReader::readConfig(const std::string &fileName){
 
 	if (myfile.is_open())
 	{
+		//std::cout<<"opened file "<<fileName<<std::endl;
 		std::string line, value, variable;
 
 		while (getline(myfile,line))
@@ -78,8 +79,8 @@ void CfgReader::setUpCfg(const char *dir){
 
 void CfgReader::readMainConfig(){
 
-
 	readConfig("configs/basic.cfg");
+	//	readConfig("configs/basic.cfg");
 
 	/*if (myfile.is_open()){
 
@@ -102,7 +103,7 @@ std::string CfgReader::getValue(const std::string &variable){
 	if(!cfgRead)
 		readMainConfig();
 
-
+	//std::values
 	return values[variable];
 
 }
@@ -124,7 +125,7 @@ int CfgReader::getInt(const std::string &variable){
 	if(!cfgRead)
 		readMainConfig();
 
-
+	//std::cout<<"got = "<<variable<<" "<< strToInt(values[variable])<<std::endl;
 	return strToInt(values[variable]);
 
 }

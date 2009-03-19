@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 		usage();
 		exit(-1);
   }
-
+	//	std::cout<<*args<<std::endl;
 	CfgReader::setUpCfg(*args);
 
   // load the training file list

@@ -41,7 +41,8 @@ CClassifier::CClassifier()
 		tree = NULL;
 		gray = NULL;
 		frameCount = 0;
-		frameJump = CfgReader::getInt("frameJump");
+		readStuff = false;
+		//	frameJump = CfgReader::getInt("frameJump");
 		
 
 
@@ -104,7 +105,10 @@ bool CClassifier::saveState(const char *filename)
 // objects found (and their location).
 bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 {
-	
+	if(!readStuff){
+		frameJump = CfgReader::getInt("frameJump");
+		readStuff=true;
+	}
 		
 		if(frameCount % frameJump == 0 && frameCount > 150){
 			assert((frame != NULL) && (objects != NULL));

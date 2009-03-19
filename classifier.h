@@ -65,5 +65,7 @@ private:
 
 		CObjectList previousObjects, tmpDisplayObjects;
 		bool isRatio(int width, int height);
+
+		bool readStuff;
 };
 
