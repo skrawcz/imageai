@@ -106,7 +106,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 {
 	
 		
-		if(frameCount % frameJump == 0){
+		if(frameCount % frameJump == 0 && frameCount > 150){
 			assert((frame != NULL) && (objects != NULL));
 
 			IplImage *oldGray = NULL;
@@ -150,7 +150,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			CObject obj;
 
 			double percent[5];
-			double threshold = CfgReader::getDouble("isObjectThreshold");
+			double threshold[5];
+      threshold[Features::MUG] = CfgReader::getDouble("isObjectThreshold");
+      threshold[Features::CLOCK] = threshold[Features::MUG];
+      threshold[Features::SCISSORS] = threshold[Features::MUG] + 0.5;
+      threshold[Features::STAPLER] = threshold[Features::MUG];
+      threshold[Features::KEYBOARD] = threshold[Features::MUG];
 
 
 			IplImage *resizedImage = cvCreateImage(cvSize(64,64), gray->depth, gray->nChannels);
@@ -191,7 +196,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 									for(int k=0; k<5;k++){
 									//std::cout << percent[k] << std::endl;	
-										if(percent[k]> threshold){
+										if(percent[k]> threshold[k]){
 											//std::cout << percent[k] << std::endl;										
 											obj.rect = cvRect(x,y,w,h);
 											obj.label = Features::imageTypeToString(Features::ImageType(k));
@@ -237,10 +242,10 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			cvReleaseImage(&IntegralImageSquare);
 
 			
-			//CObject::boostScores(*objects, previousObjects, dx, dy);
-			//CObject::copyOverwrite(*objects, previousObjects);
-			//CObject::filterOverlap(*objects);
-			CObject::stefansOverlap(*objects,3);
+			CObject::boostScores(*objects, previousObjects, dx, dy);
+			CObject::copyOverwrite(*objects, previousObjects);
+			CObject::filterOverlap(*objects);
+			//CObject::stefansOverlap(*objects,3);
 
 			// save values
 			CObject::copyOverwrite(*objects, tmpDisplayObjects);
