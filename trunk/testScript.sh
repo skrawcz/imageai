@@ -28,8 +28,10 @@ do
 										 				echo "python createConfig.py $classifier $boosttype $boostweakcount $boosttrimweight $boostmaxdepth $boostusesurrogates $feature"
 														python createConfig.py $classifier $boosttype $boostweakcount $boosttrimweight $boostmaxdepth $boostusesurrogates $feature
 												
+
+														sleep 20
 														echo "nohup ./train -c tester.out config/test.cfg >>	$MACHINENAME.$feature.txt"
-														nohup ./train -c tester.out config/test.cfg >>	$MACHINENAME.$feature.txt
+														nohup ./train -c tester.out configs/test.cfg >>	$MACHINENAME.$feature.txt
 														#nohup echo "monkey" >> $MACHINENAME.$feature.txt
 														let COUNTER=COUNTER+1
 												done
