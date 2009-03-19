@@ -119,8 +119,13 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 			//convert to gray scale
 			gray = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
-			cvCvtColor(frame,gray,CV_BGR2GRAY);
+			IplImage *tmp = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 
+			cvCvtColor(frame,tmp,CV_BGR2GRAY);
+
+			cvSmooth(tmp   , gray  , CV_GAUSSIAN, 3, 3 );
+			
+			cvReleaseImage(&tmp);
 			double dx=0, dy=0;
 
 			// calc optical flow stuff
@@ -290,7 +295,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
     featureSet = new Features();	
 
 
-    IplImage *image, *smallImage, *integralo, *gray, *integraloTilto, *integraloSquaro;
+    IplImage *image, *smallImage, *integralo, *gray, *integraloTilto, *integraloSquaro, *smoothed;
 
 		// figure out if a subset of images is wanted
 		int subset = CfgReader::strToInt(CfgReader::getValue("useSubset"));
@@ -312,6 +317,12 @@ bool CClassifier::train(TTrainingFileList& fileList)
     std::cout << "Processing images..." << std::endl;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
+
+
+		smoothed =cvCreateImage(cvGetSize(smallImage),IPL_DEPTH_8U,1);
+	
+
+
 		//integral image
 		integralo = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
 		integraloTilto = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
@@ -359,8 +370,10 @@ bool CClassifier::train(TTrainingFileList& fileList)
 				// resize to 64 x 64
 				cvResize(gray, smallImage);
 
+				cvSmooth(smallImage   , smoothed  , CV_GAUSSIAN, 3, 3 );
+
 				// create integral image
-				cvIntegral(smallImage, integralo, integraloSquaro, integraloTilto);
+				cvIntegral(smoothed, integralo, integraloSquaro, integraloTilto);
 			
 
 				featureSet->getFeatures(integralo, integraloTilto, imageData, count, smallImage);
@@ -384,6 +397,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
     // free memory
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
+		cvReleaseImage(&smoothed);
 
     std::cout << std::endl;
 
