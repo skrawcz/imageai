@@ -124,7 +124,7 @@ void Classer::findClassifierTypeFromCFG(){
 	type = CfgReader::getValue("classifierType");
 
 
-	std::cout << "Type of tree to create is: " << type << std::endl;
+	//std::cout << "Type of tree to create is: " << type << std::endl;
 
 	if(type.find("multiple") != std::string::npos){
 		classifierType = MULTIPLE;
