@@ -255,58 +255,6 @@ void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item,
 			
 			break;
 
-		case hVL:
-
-			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-			t += cvGetReal2D(im, it->y,	 						it->x);
-			t -= cvGetReal2D(im, it->y,					 		it->x + it->w);
-			t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
-	
-			t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w*2/3);
-			t -= cvGetReal2D(im, it->y,	 						it->x + it->w*1/3);
-			t += cvGetReal2D(im, it->y,	 						it->x + it->w*2/3);			
-			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w*1/3);
-
-			break;
-		case hVTL:
-
-			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-			t += cvGetReal2D(im, it->y,	 						it->x);
-			t -= cvGetReal2D(im, it->y,					 		it->x + it->w);
-			t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
-	
-			t -= cvGetReal2D(im, it->y + it->h,	 		it->x + it->w*2/3);
-			t -= cvGetReal2D(im, it->y,	 						it->x + it->w*1/3);
-			t += cvGetReal2D(im, it->y,	 						it->x + it->w*2/3);			
-			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w*1/3);
-
-			break;
-		case hHL:
-			
-			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-			t += cvGetReal2D(im, it->y,	 						it->x);
-			t -= cvGetReal2D(im, it->y,					 		it->x + it->w);
-			t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
-	
-			t += cvGetReal2D(im, it->y + it->h*1/3,	it->x + it->w);
-			t += cvGetReal2D(im, it->y + it->h*2/3,	it->x);
-			t -= cvGetReal2D(im, it->y + it->h*2/3,	it->x + it->w);
-			t -= cvGetReal2D(im, it->y + it->h*1/3,	it->x);
-
-			break;
-		case hHTL:
-			
-			t += cvGetReal2D(im, it->y + it->h,	 		it->x + it->w);
-			t += cvGetReal2D(im, it->y,	 						it->x);
-			t -= cvGetReal2D(im, it->y,					 		it->x + it->w);
-			t -= cvGetReal2D(im, it->y + it->h,	 		it->x);
-	
-			t += cvGetReal2D(im, it->y + it->h*1/4,	it->x + it->w);
-			t += cvGetReal2D(im, it->y + it->h*3/4,	it->x);
-			t -= cvGetReal2D(im, it->y + it->h*3/4,	it->x + it->w);
-			t -= cvGetReal2D(im, it->y + it->h*1/4,	it->x);
-
-			break;
 
 
 		}
@@ -314,7 +262,7 @@ void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item,
 		if(z != 0){
 			out = (z - 2*t)/z;
 		}else{
-			out = 0;
+			z = 0;
 		}		
 
 		//*( (float*)CV_MAT_ELEM_PTR( *data, item, i ) ) = fabs(out);
@@ -362,14 +310,6 @@ Features::HaarFeature Features::strToHaar(const std::string &in){
 		out.t = hH;
 	else if(tmp == "V")
 		out.t = hV;
-	else if(tmp == "VL")
-		out.t = hVL;
-	else if(tmp == "VTL")
-		out.t = hVTL;
-	else if(tmp == "HL")
-		out.t = hHL;
-	else if(tmp == "HTL")
-		out.t = hHTL;
 	else if(tmp == "D")
 		out.t = hD;
 	else if(tmp == "TL")
@@ -413,11 +353,12 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	//making space to save gradient images
 	IplImage *dstx = cvCreateImage(cvGetSize(im),IPL_DEPTH_8U,1);
 	IplImage *dsty = cvCreateImage(cvGetSize(im),IPL_DEPTH_8U,1);
-
+	IplImage *smoothed =cvCreateImage(cvGetSize(im),IPL_DEPTH_8U,1);
+	cvSmooth(im   , smoothed  , CV_GAUSSIAN, 3, 3 );
 	
 	//getting the derivatives
-	cvSobel(im,dstx,1,0);
-	cvSobel(im,dsty,0,1);
+	cvSobel(smoothed,dstx,1,0);
+	cvSobel(smoothed,dsty,0,1);
 
 	//need to get the data out of the iplimage format
 	double dxarray[dstx->height * dstx->width];
@@ -455,6 +396,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 		orientations[i]=(float)alpha_signed;
 	}
 	int width=64;
+	int height=64;
 	int cellWidth=8;
 	int numCells = width/cellWidth*width/cellWidth;
 	//std::cout<<"numCells = "<< numCells<<std::endl;
@@ -506,6 +448,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 		histInputVectMags.push_back(inputs);
 	}
 	
+	float * inputs;
 	float* floats[numCells];
 	//making histogram input;
 	for(int q=0;q<numCells;q++){
@@ -515,8 +458,8 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	}
 	//Checking wther we are doing RI stuff
 	if(RI){
-
-		for(int q=0;q<numCells;q++){	
+		//std::cout<<"in here"<<std::endl;
+		for(int q=0,idx=0;q<numCells;q++){	
 		//finding highest peak in histogram
 			float max=-1.0f;
 			int indx =-1;
@@ -542,7 +485,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	}else{
 		//std::cout<<"no RI"<<std::endl;
 		//if not doing RI stuff added the features
-		for(int q=0;q<numCells;q++){
+		for(int q=0,idx=0;q<numCells;q++){
 			//std::cout<<"hist = ";
 			for(int k=0;k<9;k++){
 				float f = floats[q][k];
@@ -562,7 +505,7 @@ void Features::getHOGFeatures(const IplImage *im, CvMat *data, int item,
 	//====== releasing stuff============
 	cvReleaseImage(&dstx);
 	cvReleaseImage(&dsty);
-	
+	cvReleaseImage(&smoothed);
  
 }
 
