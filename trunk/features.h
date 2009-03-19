@@ -28,7 +28,7 @@ public:
   };
 
   enum HaarType{
-    hH, hV, hD, hTL, hTR, hBL, hBR, hVL, hVTL, hHL, hHTL
+    hH, hV, hD, hTL, hTR, hBL, hBR
   };
 
   struct HaarFeature{
