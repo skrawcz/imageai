@@ -106,7 +106,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 {
 	
 		
-		if(frameCount % frameJump == 0 && frameCount > 0){
+		if(frameCount % frameJump == 0 && frameCount > 150){
 			assert((frame != NULL) && (objects != NULL));
 
 			IplImage *oldGray = NULL;
@@ -269,7 +269,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 bool CClassifier::isRatio(int width, int height){
 	double ratio = ((double)width)/((double)height);
 	//if (ratio == 5/2 || ratio == 10/3 || ratio == 30/11 || ratio == 1){
-	if (ratio == 5/2 || ratio == 1){
+	if (ratio == 30/11 || ratio == 1){
 		return true;
 
 	}else{
@@ -296,14 +296,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 		// figure out if a subset of images is wanted
 		int subset = CfgReader::strToInt(CfgReader::getValue("useSubset"));
-		std::cout << "Training on a subset of about: " << subset  << std::endl;
+		//std::cout << "Training on a subset of about: " << subset  << std::endl;
 		srand ( time(NULL) );
 		int count = 0;
 
 		// create cv matrix that has a row of features for every image
 		//CvMat *imageData = cvCreateMat((int)fileList.files.size(),
 		//Features::amountOfFeatures(), CV_32FC1);
-		std::cout<<"there are this many features "<<featureSet->amountOfFeatures()<<std::endl;
+		//std::cout<<"there are this many features "<<featureSet->amountOfFeatures()<<std::endl;
 
 		CvMat *imageData = cvCreateMat((int)(fileList.files.size()/subset), featureSet->amountOfFeatures(), CV_32FC1);
 
@@ -311,7 +311,7 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		CvMat *imageTypes = cvCreateMat((int)(fileList.files.size()/subset), 1, CV_32SC1);
 
 
-    std::cout << "Processing images..." << std::endl;
+    //std::cout << "Processing images..." << std::endl;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
@@ -323,9 +323,9 @@ bool CClassifier::train(TTrainingFileList& fileList)
 								 //i < 20;++i){
 
 			// show progress
-			if (i % 1000 == 0) {
+			/*if (i % 1000 == 0) {
 					showProgress(i, fileList.files.size());
-			}
+			}*/
 
 
 			// doing this we simply avoid some of the "other" images 
@@ -387,14 +387,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
 
-    std::cout << std::endl;
+   // std::cout << std::endl;
 
 		if(tree != NULL)
 			delete tree;
 
-		std::cout << "making tree"<<std::endl;
+		//std::cout << "making tree"<<std::endl;
 		tree = Classer::create(imageData, imageTypes);
-		std::cout << "finished with tree" << std::endl;
+		//std::cout << "finished with tree" << std::endl;
 
 		cvReleaseMat(&imageData);
 		cvReleaseMat(&imageTypes);

@@ -11,11 +11,12 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 	double weightTrimRrate = CfgReader::getDouble("boostWeightTrimRrate");
 	int maxDepth = CfgReader::getInt("boostMaxDepth");
 	bool useSurrogates = (bool)CfgReader::getInt("boostUseSurrogates");
+  int featureType = (int)CfgReader::getInt("featureType");
 
 	// amount of variables
 	int var_count = examples->cols;
 
-	std::cout << "Current settings: " << type << " " << weakCount << " " << weightTrimRrate << " " << maxDepth << " " << useSurrogates << std::endl;
+	std::cout << "Settings:\t" << type << "\t" << weakCount << "\t" << weightTrimRrate << "\t" << maxDepth << "\t" << useSurrogates << "\t" << featureType <<"\t";
 	
 	// create type mask
 	CvMat* var_type = cvCreateMat( var_count + 1, 1, CV_8UC1 );
@@ -100,13 +101,12 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 		}
 
 		// train classifier
-		std::cout << "Training the classifier (may take a few minutes)..." << std::endl;
+		//std::cout << "Training the classifier (may take a few minutes)..." << std::endl;
 		boost.at(j)->train( trainData, CV_ROW_SAMPLE, new_responses, 0, 0, var_type, 0, 
 											CvBoostParams(type, weakCount, weightTrimRrate, maxDepth, useSurrogates, 0 ));
 
 		cvReleaseMat( &new_responses );
 		
-		printf("\n");
 
 		// save weak classifiers in vector for future classifications
 		weak_responses.push_back(cvCreateMat( 1, boost.at(j)->get_weak_predictors()->total, CV_32F ));
@@ -152,7 +152,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 				// save amount of images tested
 				testTotalCount++;
 
-				std::cout << best_class << " " << testResponses->data.i[i] << std::endl;
+				//std::cout << best_class << " " << testResponses->data.i[i] << std::endl;
 
 				// save amount of correct results
 				testHr += best_class == testResponses->data.i[i];
@@ -187,7 +187,7 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 				// save amount of images tested
 				trainTotalCount++;
 
-				std::cout << best_class << " " << trainResponses->data.i[i] << std::endl;
+				//std::cout << best_class << " " << trainResponses->data.i[i] << std::endl;
 
 				// save amount of correct results
 				trainHr += best_class == trainResponses->data.i[i];
@@ -197,8 +197,8 @@ BoostTree::BoostTree(CvMat *examples, CvMat *imageTypes){
 		//test_hr /= (double)(nsamples_all-ntrain_samples);
 		//train_hr /= (double)ntrain_samples;
 
-		std::cout << "Testing accuracy: " << (float)testHr/(float)testTotalCount << std::endl;
-		std::cout << "Training accuracy: " << (float)trainHr/(float)trainTotalCount << std::endl;
+    std::cout << "Training accuracy:\t" << (float)trainHr/(float)trainTotalCount<<"\t";
+		std::cout << "Testing accuracy:\t" << (float)testHr/(float)testTotalCount<<std::endl;
 
 		cvReleaseMat(&trainData);
 		cvReleaseMat(&testData);
@@ -219,7 +219,7 @@ BoostTree::BoostTree(const char *filename){
 		out << j << ".xml";
 		egon.append(out.str());
 
-		std::cout << egon << std::endl;
+		//std::cout << egon << std::endl;
 
 		boost.at(j)->load( egon.c_str() );
 
