@@ -6,9 +6,11 @@
 #include <iostream>
 #include <vector>
 
-//#define HAARAMOUNT 57
-//#define HOGAMOUNT 64
 #define TYPECOUNT 5
+
+//this class creates all our features
+//it creates them depending on the feature type 
+// selected in the config file.
 
 class Features{
 
@@ -42,46 +44,6 @@ public:
 	
 	int amountOfFeatures();
 	bool amountOfFeaturesRounded();
-	/*
-	static int amountOfFeatures(){
-
-		// Make uneven number as the boost functions dont work otherwise
-		//		return HAARAMOUNT + (HAARAMOUNT)%2;
-		switch(featureType){
-		case HAAR:
-			return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
-			break;
-			
-		case HOG:
-			return HOGAMOUNT;
-			break;
-			
-		case HAARHOG:
-			return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
-			break;
-		}
-		return HAARAMOUNT + HOGAMOUNT +(HAARAMOUNT)%2;
-
-	}
-
-	static bool amountOfFeaturesRounded(){
-		//		return (HAARAMOUNT)%2;
-	switch(featureType){
-		case HAAR:
-			return (HAARAMOUNT)%2;
-			break;
-			
-		case HOG:
-			return (HOGAMOUNT)%2;
-			break;
-			
-		case HAARHOG:
-			return (HAARAMOUNT + HOGAMOUNT)%2;
-			break;
-		}
-	return false;
-	}*/
-
 
 	static ImageType stringToImageType(const std::string &val){
 

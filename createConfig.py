@@ -30,7 +30,7 @@ boxOverlapThreshold=0.4; \n\
 classifierType=%s; \n\
 \n\
 [if one half of training set is used to look at quality of results] \n\
-createGraph=1; [is a boolean, use 1 for true, 0 for false] \n\
+createGraph=0; [is a boolean, use 1 for true, 0 for false] \n\
 graphNames=boostResults; \n\
 graphTrainTestRatio=0.7; [percentage of examples used for training if createGraph = true ]\n\
 [the subset defines the proportion of images to use. 1= all images 10= one tenth etc ]\n\

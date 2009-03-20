@@ -12,6 +12,7 @@
 #include "CfgReader.h"
 #define PI 3.14159265
 
+//amount of features we define
 #define HAARAMOUNT 147
 #define HOGAMOUNT 64*9 //64*9
 #define RIHOGAMOUNT 64*9 //64*9
@@ -19,7 +20,7 @@
 //#define TYPECOUNT 5
 
 Features::Features(){
-
+	//this sets the amount of features.
 	featureType = (FeatureType)CfgReader::getInt("featureType");
 	switch(featureType){
 	case HAAR:
@@ -61,19 +62,6 @@ Features::Features(){
 		numOfFeatures = numOfFeatures+1;
 	}
 
-
-	//	featureType = HAAR;
-	//	featureType = HOG;
-	
-	//featureType = HAARHOG;
-	//featureType = HCORNER;
-	//	featureType = ALL; //haar hog hcorner
-	//featureType = ALL2;  //haar hog hcorner rihog
-	//featureType = ALL3;  //haar rihog hcorner
-	//featureType = HAARCORNER;
-	//featureType = HOGCORNER;
-	//featureType = RIHOG;
-
   readHaars();
 }
 
@@ -81,18 +69,22 @@ Features::~Features(){
 	//should probably deallocate the features...
 }
 
+//method returns true if we need to pad the feature array
 bool Features::amountOfFeaturesRounded(){
 	
 	return needToPadFeature;
 
 }
 
+//returns the amount of features
 int Features::amountOfFeatures(){
 	
 	return numOfFeatures;
 }
 
 
+//returns the features, switching depending on the features type - which
+//dictates what features are used
 void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *data, int item, const IplImage *realImg){
 
 	switch(featureType){
@@ -149,6 +141,7 @@ void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *da
 
 }
 
+//computes the haar features
 void Features::getHaarFeatures(const IplImage *im, CvMat *data, int item,
 															 int startIndex){
 
@@ -558,7 +551,7 @@ float* Features::makeHistogram(std::vector<float> ovect,std::vector<float>
 	return hist;
 }
 
-
+//this method gets the harris corner count
 void Features::getHarrisCornerCount(const IplImage *im, CvMat *data, int item,
 																	 int startIndex){
 	int MAX_CORNERS = 40;

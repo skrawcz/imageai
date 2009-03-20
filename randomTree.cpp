@@ -47,7 +47,7 @@ Features::ImageType RandomTree::classify(CvMat *imageData, double *percent){
 	int pred = (int)forest.predict(imageData);
 
 	if(pred != 5){
-		std::cout << pred << std::endl;
+		//std::cout << pred << std::endl;
 		*percent = 0.1;	
 
 	}
