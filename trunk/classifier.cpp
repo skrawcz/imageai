@@ -42,10 +42,6 @@ CClassifier::CClassifier()
 		gray = NULL;
 		frameCount = 0;
 		readStuff = false;
-		//	frameJump = CfgReader::getInt("frameJump");
-		
-
-
     // CS221 TO DO: add initialization for any member variables   
 }
     
@@ -74,15 +70,11 @@ bool CClassifier::loadState(const char *filename)
     assert(filename != NULL);
 
     featureSet = new Features();		
-    //readHaars();
 
 		if(tree)
 			delete tree;
 
 		tree = Classer::createFromXML(filename);
-
-		//saveState("bongo.xml");
-
 
     return true;
 }
@@ -92,10 +84,8 @@ bool CClassifier::loadState(const char *filename)
 bool CClassifier::saveState(const char *filename)
 {
     assert(filename != NULL);
-    //std::cout<<"in save state 1"<<std::endl;
     if(tree == NULL)	
 			return false;
-    //std::cout<<"in save state 2"<<std::endl;
 
     return Classer::printToXML(filename, tree);
 }
@@ -117,8 +107,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 			if(gray != NULL){
 
-				oldGray = gray;//cvCreateImage(cvGetSize(gray),IPL_DEPTH_8U,1);
-				//cvCopy(gray, oldGray);
+				oldGray = gray;
 			}
 
 			//convert to gray scale
@@ -142,12 +131,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 				cvReleaseMat(&dyMat);
 				cvReleaseImage(&oldGray);
 
-				//std::cout << dx << " " << dy << std::endl;
-
 			}
 
 			// feature vector of image plus one in size to work with boost
-			//		CvMat *imageData = cvCreateMat(1, Features::amountOfFeatures(), CV_32F);
 			CvMat *imageData = cvCreateMat(1, featureSet->amountOfFeatures(), CV_32F);
 
 
@@ -156,6 +142,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			double percent[5];
 			double threshold[5];
       threshold[Features::MUG] = CfgReader::getDouble("isObjectThreshold");
+      //some threshold balancing.
       threshold[Features::CLOCK] = threshold[Features::MUG];
       threshold[Features::SCISSORS] = threshold[Features::MUG] + 1.5;
       threshold[Features::STAPLER] = threshold[Features::MUG] + 0.2;
@@ -174,7 +161,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 				for (int y = 0; y<=240; y = y+8){
 					for (int w = 64; w<=320; w = w+8){
 						for (int h = 64 ; h<=240; h = h+8){
-							//check if we are out of frame & for milestone only take squares
+							//check if we are out of frame & only take ratios that correspond to objects we've trained
 							if( (x+w <= gray->width) && (y+h <= gray->height) && isRatio(w,h)) {
 								//clip the image to the right size
 								CvRect region = cvRect(x,y,w,h);
@@ -196,45 +183,31 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 								if(tree){
 
-									//classifiedImage =
 									tree->classify(imageData, percent);
 
-									for(int k=0; k<5;k++){
-									//std::cout << percent[k] << std::endl;	
-										if(percent[k]> threshold[k]){
-											//std::cout << percent[k] << std::endl;										
+                  //check all types and see if they pass the threshold.
+									for(int k=0; k<5;k++){	
+										if(percent[k]> threshold[k]){									
 											obj.rect = cvRect(x,y,w,h);
 											obj.label = Features::imageTypeToString(Features::ImageType(k));
 											obj.score = percent[k];
 											obj.type = k;
                        
+                      //mugs and clocks can only be square objects
                       if (obj.type == Features::MUG || obj.type == Features::CLOCK){
                         if(w==h){
                           objects->push_back(obj);
                         }
                           
                       }else{
+                        //other items can only be non square objects
                         if(w!=h){
                           objects->push_back(obj);
                         }
                       }							
 										}
 									}
-
-									/*test this image
-									if (classifiedImage != Features::OTHER && percent > highestPercent){
-						
-										highestPercent = percent;
-										//std::cout << classifiedImage << std::endl;
-										obj.rect = cvRect(x,y,w,h);
-										obj.label = Features::imageTypeToString(classifiedImage);
-									
-									}
-									*/
 								}
-
-							
-							//	std::cout<<"in loop"<<std::endl;
 								cvReleaseImage(&clippedImage);
 								
 							}
@@ -248,13 +221,11 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			cvReleaseImage(&IntegralImageSquare);
 
 			
-
+      //boost scores by using optical flow and the previous frame data
 			CObject::boostScores(*objects, previousObjects, dx, dy);
 			CObject::copyOverwrite(*objects, previousObjects);
+      //gets rid of objects that overlap more than our config defined percentage
 			CObject::filterOverlap(*objects);
-			//CObject::stefansOverlap(*objects,1);
-
-
 
 			// save values
 			CObject::copyOverwrite(*objects, tmpDisplayObjects);
@@ -268,15 +239,14 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		}
 
 		frameCount++;			
-		//std::cout<<"returning"<<std::endl;
 		return true;
 
 }
 
 bool CClassifier::isRatio(int width, int height){
 	double ratio = ((double)width)/((double)height);
-	//if (ratio == (double)5/2 || ratio == (double)10/3 || ratio == (double)30/11 || ratio == (double)1){
-	//if (ratio == 30/11 || ratio == 1){
+  //Squares are okay for clock and mug
+  //take rectangle ratios between the training data ratios for keyboards, staplers, and scissors
   if (ratio == 1 || (ratio >= 5.0/2.0 && ratio <= 10.0/3.0)){		
     return true;
 
@@ -304,22 +274,16 @@ bool CClassifier::train(TTrainingFileList& fileList)
 
 		// figure out if a subset of images is wanted
 		int subset = CfgReader::strToInt(CfgReader::getValue("useSubset"));
-		//std::cout << "Training on a subset of about: " << subset  << std::endl;
+
 		srand ( time(NULL) );
 		int count = 0;
 
 		// create cv matrix that has a row of features for every image
-		//CvMat *imageData = cvCreateMat((int)fileList.files.size(),
-		//Features::amountOfFeatures(), CV_32FC1);
-		//std::cout<<"there are this many features "<<featureSet->amountOfFeatures()<<std::endl;
-
 		CvMat *imageData = cvCreateMat((int)(fileList.files.size()/subset), featureSet->amountOfFeatures(), CV_32FC1);
 
 		// keep track of type of image
 		CvMat *imageTypes = cvCreateMat((int)(fileList.files.size()/subset), 1, CV_32SC1);
 
-
-    //std::cout << "Processing images..." << std::endl;
 		//grey scale image 
     smallImage = cvCreateImage(cvSize(64, 64), IPL_DEPTH_8U, 1);
 		//integral image
@@ -328,19 +292,11 @@ bool CClassifier::train(TTrainingFileList& fileList)
 		integraloSquaro = cvCreateImage(cvSize(65, 65), IPL_DEPTH_64F, 1);
 
     for (int i = 0;i < (int)fileList.files.size(); i++) { 
-								 //i < 20;++i){
-
-			// show progress
-			/*if (i % 1000 == 0) {
-					showProgress(i, fileList.files.size());
-			}*/
 
 
 			// doing this we simply avoid some of the "other" images 
 
 			if(subset == 1 || Features::stringToImageType(fileList.files[i].label) != 5 || (rand() % subset == 0 &&  imageData->rows - count > 284)) {
-				//if(Features::stringToImageType(fileList.files[i].label) != 1)
-				//	continue;
 				count++;
 
 				if(count >= imageData->rows)
@@ -374,12 +330,8 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			
 
 				featureSet->getFeatures(integralo, integraloTilto, imageData, count, smallImage);
-				//			featureSet->getHOGFeatures(smallImage,imageData,i);
-				//featureSet->getHOGFeatures(smallImage,imageData,i);
 
 				cvSetReal1D( imageTypes, count, Features::stringToImageType(fileList.files[i].label) );
-
-				//std::cout << Features::stringToImageType(fileList.files[i].label) << std::endl;
 
 				// free memory
 				//releasing gray (if the image was grayscale to begin with this
@@ -389,20 +341,14 @@ bool CClassifier::train(TTrainingFileList& fileList)
 			}
 
     }
-		//	cvDestroyWindow("WindowName");//destroying view window - put
-				//outside loop
     // free memory
     cvReleaseImage(&smallImage);
 		cvReleaseImage(&integralo);
 
-   // std::cout << std::endl;
-
 		if(tree != NULL)
 			delete tree;
 
-		//std::cout << "making tree"<<std::endl;
 		tree = Classer::create(imageData, imageTypes);
-		//std::cout << "finished with tree" << std::endl;
 
 		cvReleaseMat(&imageData);
 		cvReleaseMat(&imageTypes);
