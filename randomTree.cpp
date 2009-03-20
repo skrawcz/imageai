@@ -39,7 +39,7 @@ RandomTree::RandomTree(const char *filename){
 
 }
 
-Features::ImageType RandomTree::classify(CvMat *imageData, double *percent){
+Features::ImageType RandomTree::classify(CvMat *imageData, double *percent, int type){
 
 
 

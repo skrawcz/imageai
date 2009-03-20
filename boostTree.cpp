@@ -239,28 +239,36 @@ BoostTree::BoostTree(const char *filename){
 
 }
 
-Features::ImageType BoostTree::classify(CvMat *imageData, double *percent){
+Features::ImageType BoostTree::classify(CvMat *imageData, double *percent, int type){
 
 	double maxSum;
 	int best_class = Features::OTHER, goody;
 
+	if(type == -1){
 
-	for(int j = 0; j < TYPECOUNT; j++ )
-	{
-
-		goody = (int)boost.at(j)->predict( imageData, 0, weak_responses.at(j) );
-		percent[j] = cvSum( weak_responses.at(j) ).val[0];
-
-		if( maxSum < percent[j] && goody == 1)
+		for(int j = 0; j < TYPECOUNT; j++ )
 		{
-			maxSum = percent[j];
-			best_class = j;
+
+			goody = (int)boost.at(j)->predict( imageData, 0, weak_responses.at(j) );
+			percent[j] = cvSum( weak_responses.at(j) ).val[0];
+
+			if( maxSum < percent[j] && goody == 1)
+			{
+				maxSum = percent[j];
+				best_class = j;
+			}
 		}
+
+		return Features::ImageType(best_class);
+
+	}else{
+
+
+		goody = (int)boost.at(type)->predict( imageData, 0, weak_responses.at(type) );
+		percent[type] = cvSum( weak_responses.at(type) ).val[0];
+
+		return Features::ImageType(type);
 	}
-
-	return Features::ImageType(best_class);
-
-
 }
 
 BoostTree::~BoostTree(){

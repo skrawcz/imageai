@@ -303,7 +303,7 @@ void CObject::stefansOverlap(std::vector<CObject>& src,int num){
 
 	string objects[]={"mug","scissors","stapler","clock","keyboard"};
 	//making vectors of just the one type
-	for(int i=0;i<src.size();++i){
+	for(unsigned i=0;i<src.size();++i){
 		if(objects[0].compare(src[i].label)== 0 ){
 			mug.push_back(src[i]);
 		}else if(objects[1].compare(src[i].label)== 0 ){
@@ -329,24 +329,24 @@ void CObject::stefansOverlap(std::vector<CObject>& src,int num){
 	//std::cout<<"finished sort"<<std::endl;
 	src.clear();
 	//	std::cout<<"cleared out old vect"<<std::endl;
-	for(int i=0; i<num && i < mug.size();++i){
+	for(unsigned i=0; i<num && i < mug.size();++i){
 			src.push_back(mug[i]);
 	}
 				//	std::cout<<"done mug"<<std::endl;
-	for(int i=0; i<num && i < stapler.size() ;++i){
+	for(unsigned i=0; i<num && i < stapler.size() ;++i){
 			src.push_back(stapler[i]);
 	}
 				//	std::cout<<"done stapler"<<std::endl;
-	for(int i=0; i<num && i < scissors.size();++i){
+	for(unsigned i=0; i<num && i < scissors.size();++i){
 			src.push_back(scissors[i]);
 	}
 				//	std::cout<<"done scissors"<<std::endl;
-	for(int i=0; i<num && i<  keyboard.size();++i){
+	for(unsigned i=0; i<num && i<  keyboard.size();++i){
 			src.push_back(keyboard[i]);
 	}
 				//	std::cout<<"done keyboard"<<std::endl;
 				//	num=100;
-	for(int i=0; i<num && i < clock.size();++i){
+	for(unsigned i=0; i<num && i < clock.size();++i){
 			src.push_back(clock[i]);
 	}
 				//std::cout<<"done clock"<<std::endl;

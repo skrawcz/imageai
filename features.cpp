@@ -22,47 +22,13 @@
 Features::Features(){
 	//this sets the amount of features.
 	featureType = (FeatureType)CfgReader::getInt("featureType");
-	switch(featureType){
-	case HAAR:
-	case HAARTILT:
-		numOfFeatures = HAARAMOUNT;
-		break;
-	case HAAR_HAARTILT:
-		numOfFeatures = HAARAMOUNT*2;
-		break;
-	case HOGN:
-	case HOGUN:
-	case HOGRI:
-		numOfFeatures = HOGAMOUNT;
-		break;
-	case HAAR_HOG:  
-		numOfFeatures = HAARAMOUNT + HOGAMOUNT;
-		break;
-	case HCORNER:
-		numOfFeatures = HCORNERAMOUNT;
-		break;
-	case HAAR_HCORNER:
-		numOfFeatures = HAARAMOUNT + HCORNERAMOUNT;
-		break;
-	case HOG_HCORNER:
-		numOfFeatures = HOGAMOUNT + HCORNERAMOUNT;
-		break;
-	case HAAR_HOG_HCORNER:
-		numOfFeatures = HAARAMOUNT + HOGAMOUNT + HCORNERAMOUNT;
-		break;
-	default:
-		std::cout<<"error, unrecognized feature type put int"<<std::endl;
-		numOfFeatures = -1;
-		break;
-	}
-	if(numOfFeatures%2==0){
-		needToPadFeature=false;
-	}else{
-		needToPadFeature=true;
-		numOfFeatures = numOfFeatures+1;
-	}
 
   readHaars();
+
+	// get amount of features
+	numOfFeatures = amountOfFeatures(featureType, &needToPadFeature);
+
+
 }
 
 Features::~Features(){
@@ -76,17 +42,141 @@ bool Features::amountOfFeaturesRounded(){
 
 }
 
-//returns the amount of features
-int Features::amountOfFeatures(){
+// Returns amount of features. Feat and numFeatsOutPad have standard values, if these are not set
+// it will simply return the standard amount of features in use.
+int Features::amountOfFeatures(Features::FeatureType feat, bool *numFeatsOutPad){
 	
-	return numOfFeatures;
+
+	if(feat == ERROR){
+		return numOfFeatures;
+	}else{
+
+		int numFeatsOut;
+
+		switch(feat){
+		case HAAR:
+		case HAARTILT:
+			numFeatsOut = HAARAMOUNT;
+			break;
+		case HAAR_HAARTILT:
+			numFeatsOut = HAARAMOUNT*2;
+			break;
+		case HOGN:
+		case HOGUN:
+		case HOGRI:
+			numFeatsOut = HOGAMOUNT;
+			break;
+		case HAAR_HOG:  
+			numFeatsOut = HAARAMOUNT + HOGAMOUNT;
+			break;
+		case HCORNER:
+			numFeatsOut = HCORNERAMOUNT;
+			break;
+		case HAAR_HCORNER:
+			numFeatsOut = HAARAMOUNT + HCORNERAMOUNT;
+			break;
+		case HOG_HCORNER:
+			numFeatsOut = HOGAMOUNT + HCORNERAMOUNT;
+			break;
+		case HAAR_HOG_HCORNER:
+			numFeatsOut = HAARAMOUNT + HOGAMOUNT + HCORNERAMOUNT;
+			break;
+		default:
+			std::cout<<"error, unrecognized feature type put int"<<std::endl;
+			numFeatsOut = -1;
+			break;
+		}
+		if(numFeatsOut%2==0){
+			*numFeatsOutPad=false;
+		}else{
+			*numFeatsOutPad=true;
+			numFeatsOut = numFeatsOut+1;
+		}
+
+		return numFeatsOut;
+
+	}
 }
 
+// If the program uses multiple different feature sets its important that open CV gets the right stuff.
+// Therefore we start with the most extensive featureset and crop the bits that are not needed. It then returns a new cropped matrix.
+CvMat *Features::getFeaturesSubset(CvMat *inData, Features::FeatureType subFeat){
 
-//returns the features, switching depending on the features type - which
-//dictates what features are used
+	CvMat *croppedData;
+
+	if(featureType != HAAR_HOG_HCORNER){
+		
+		std::cout << "need complete features!" << std::endl;
+		return NULL;
+	}else{
+
+		bool pad;
+		int numFeats = amountOfFeatures(subFeat, &pad);
+		
+		croppedData = cvCreateMat(1, numFeats, CV_32F);
+
+		//getHaarFeatures(im, data, item,0);
+		//getUnNormHOGFeatures(realImg,data,item,HAARAMOUNT);
+		//getHarrisCornerCount(realImg,data,item,HAARAMOUNT+HOGAMOUNT);
+
+		switch(subFeat){
+		case HAAR_HOG:
+		
+			for(int i=0;i<HAARAMOUNT + HOGAMOUNT;++i){
+					croppedData->data.fl[i] = inData->data.fl[i];
+			}	
+			
+			break;
+		case HAAR_HCORNER:
+			
+			for(int i=0;i<HAARAMOUNT;++i){
+				
+				croppedData->data.fl[i] = inData->data.fl[i];
+			}
+
+			croppedData->data.fl[HAARAMOUNT] = inData->data.fl[HAARAMOUNT + HOGAMOUNT];		
+
+			break;
+		case HOG_HCORNER:
+
+			for(int i=0;i<HOGAMOUNT + HCORNERAMOUNT;++i){
+				
+				croppedData->data.fl[i] = inData->data.fl[i + HAARAMOUNT];
+			}	
+
+			break;
+
+		case HAAR_HOG_HCORNER:
+
+			for(int i=0;i<HOGAMOUNT + HCORNERAMOUNT + HAARAMOUNT;++i){
+				
+				croppedData->data.fl[i] = inData->data.fl[i];
+			}	
+			
+			break;
+
+		default:
+			std::cout << "type not supported" << std::endl;
+
+		break;
+
+		}
+
+		if(pad){
+	
+			croppedData->data.fl[numFeats] = 0.0;
+
+		}
+
+	}
+
+	return croppedData;
+
+}
+// returns relevant features for an image. The type of features returned is based on values passed by config file.
 void Features::getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *data, int item, const IplImage *realImg){
 
+	
 	switch(featureType){
 	case HAAR:
 		getHaarFeatures(im, data, item,0);

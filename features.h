@@ -21,7 +21,7 @@ public:
 	// add more types ! :) 
 	enum FeatureType{
 		HAAR, HAARTILT, HAAR_HAARTILT,HOGN, HOGUN, HOGRI, HAAR_HOG, HCORNER, 
-		HAAR_HCORNER, HOG_HCORNER, HAAR_HOG_HCORNER
+		HAAR_HCORNER, HOG_HCORNER, HAAR_HOG_HCORNER, ERROR
 	};
 
 	// make very sure other is last!
@@ -39,10 +39,10 @@ public:
   };
 
 	
-
+	CvMat *getFeaturesSubset(CvMat *inData, Features::FeatureType subFeat);
 	void getFeatures(const IplImage *im, const IplImage *imTilt, CvMat *data, int item, const	IplImage *realImg);
 	
-	int amountOfFeatures();
+	int  amountOfFeatures(FeatureType feat = ERROR, bool *numFeatsOutPad = false);
 	bool amountOfFeaturesRounded();
 
 	static ImageType stringToImageType(const std::string &val){
