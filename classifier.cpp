@@ -110,7 +110,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 		readStuff=true;
 	}
 		
-		if(frameCount % frameJump == 0){// && frameCount > 150){
+		if(frameCount % frameJump == 0){
 			assert((frame != NULL) && (objects != NULL));
 
 			IplImage *oldGray = NULL;
@@ -207,6 +207,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 											obj.label = Features::imageTypeToString(Features::ImageType(k));
 											obj.score = percent[k];
 											obj.type = k;
+                       
                       if (obj.type == Features::MUG || obj.type == Features::CLOCK){
                         if(w==h){
                           objects->push_back(obj);
@@ -216,7 +217,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
                         if(w!=h){
                           objects->push_back(obj);
                         }
-                      }											
+                      }							
 										}
 									}
 
@@ -247,10 +248,12 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			cvReleaseImage(&IntegralImageSquare);
 
 			
+
 			CObject::boostScores(*objects, previousObjects, dx, dy);
 			CObject::copyOverwrite(*objects, previousObjects);
 			CObject::filterOverlap(*objects);
-			//CObject::stefansOverlap(*objects,3);
+			//CObject::stefansOverlap(*objects,1);
+
 
 
 			// save values
@@ -272,9 +275,10 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 bool CClassifier::isRatio(int width, int height){
 	double ratio = ((double)width)/((double)height);
-	//if (ratio == 5/2 || ratio == 10/3 || ratio == 30/11 || ratio == 1){
-	if (ratio == 30/11 || ratio == 1){
-		return true;
+	//if (ratio == (double)5/2 || ratio == (double)10/3 || ratio == (double)30/11 || ratio == (double)1){
+	//if (ratio == 30/11 || ratio == 1){
+  if (ratio == 1 || (ratio >= 5.0/2.0 && ratio <= 10.0/3.0)){		
+    return true;
 
 	}else{
 		return false;
