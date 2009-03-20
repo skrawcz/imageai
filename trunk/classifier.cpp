@@ -157,7 +157,7 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			double threshold[5];
       threshold[Features::MUG] = CfgReader::getDouble("isObjectThreshold");
       threshold[Features::CLOCK] = threshold[Features::MUG];
-      threshold[Features::SCISSORS] = threshold[Features::MUG] ;
+      threshold[Features::SCISSORS] = threshold[Features::MUG];
       threshold[Features::STAPLER] = threshold[Features::MUG];
       threshold[Features::KEYBOARD] = threshold[Features::MUG];
 
