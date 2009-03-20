@@ -141,6 +141,8 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 			double percent[5];
 			double threshold[5];
+
+			// type specific thresholds
       threshold[Features::MUG] = CfgReader::getDouble("isObjectThreshold");
       //some threshold balancing.
       threshold[Features::CLOCK] = threshold[Features::MUG];
@@ -148,13 +150,19 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
       threshold[Features::STAPLER] = threshold[Features::MUG] + 0.2;
       threshold[Features::KEYBOARD] = threshold[Features::MUG] - 0.2;
 
-
+			// type specific featuresets
+		
+			int featureType[5];
+      featureType[Features::MUG] = CfgReader::getInt("mugFeatureType");
+      featureType[Features::CLOCK] = CfgReader::getInt("clockFeatureType");
+      featureType[Features::SCISSORS] = CfgReader::getInt("scissorFeatureType");
+      featureType[Features::STAPLER] = CfgReader::getInt("staplerFeatureType");
+      featureType[Features::KEYBOARD] = CfgReader::getInt("keyboardFeatureType");
 
 			IplImage *resizedImage = cvCreateImage(cvSize(64,64), gray->depth, gray->nChannels);
 			IplImage *integralImage = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
 			IplImage *IntegralImageSquare = cvCreateImage(cvSize(65, 65), IPL_DEPTH_64F, 1);
 			IplImage *IntegralImageTilted = cvCreateImage(cvSize(65, 65), IPL_DEPTH_32S, 1);
-
 
 			//iterate through candidate frames
 			for (int x = 0; x <=320; x = x+8){
@@ -181,18 +189,24 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 
 								featureSet->getFeatures(integralImage, IntegralImageTilted, imageData, 0,resizedImage);
 
+
 								if(tree){
 
-									tree->classify(imageData, percent);
+									for(int k=0; k<5;k++){
+										CvMat *croppedData = featureSet->getFeaturesSubset(imageData, (Features::FeatureType)featureType[k]);
 
-                  //check all types and see if they pass the threshold.
-									for(int k=0; k<5;k++){	
-										if(percent[k]> threshold[k]){									
+										tree->classify(croppedData, percent, k);
+
+										cvReleaseMat(&croppedData);
+
+										if(percent[k]> threshold[k]){
+								
+
 											obj.rect = cvRect(x,y,w,h);
 											obj.label = Features::imageTypeToString(Features::ImageType(k));
 											obj.score = percent[k];
 											obj.type = k;
-                       
+         
                       //mugs and clocks can only be square objects
                       if (obj.type == Features::MUG || obj.type == Features::CLOCK){
                         if(w==h){
