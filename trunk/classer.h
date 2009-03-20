@@ -8,6 +8,13 @@
 
 #include "features.h"
 
+/*
+ * This class is the parent class all our classifier type.
+ * 
+ *
+ */
+
+
 class Classer{
 
 
@@ -42,13 +49,11 @@ protected:
 
 	static ClassifierType classifierType;
 
-
-
 	// can only be created by its children
 	Classer() {};
 
 private:
-
+	//methods for finding information from the config file
 	static void findClassifierTypeFromCFG();
 	static Features::ImageType findTreeTypeFromCFG();
 

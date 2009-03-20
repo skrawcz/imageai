@@ -2,6 +2,15 @@
 echo "Setting script to run"
 
 CLASSIFIER="boost"
+<<<<<<< .mine
+BOOSTTYPE="3"
+BOOSTWEAKCOUNT="150"   #"50 100 150"
+BOOSTTRIMWEIGHT="0.95"
+BOOSTMAXDEPTH="5"
+BOOSTUSESURROGATES="0"
+#FEATURETYPE="0 1 2 3 4 5 6 7 8 9 10"
+FEATURETYPE="9"
+=======
 BOOSTTYPE="1"
 BOOSTWEAKCOUNT="50 100 150"
 BOOSTTRIMWEIGHT="0.95"
@@ -9,8 +18,13 @@ BOOSTMAXDEPTH="5 10 15 20"
 BOOSTUSESURROGATES="0"
 FEATURETYPE="9"
 #FEATURETYPE="0"
+>>>>>>> .r109
 COUNTER=0
+<<<<<<< .mine
+MACHINENAME="myth4"
+=======
 MACHINENAME="myth23"
+>>>>>>> .r109
 for classifier in $CLASSIFIER
 do
 		for boosttype in $BOOSTTYPE
@@ -27,14 +41,14 @@ do
 												do
 										 				echo "python createConfig.py $classifier $boosttype $boostweakcount $boosttrimweight $boostmaxdepth $boostusesurrogates $feature"
 														python createConfig.py $classifier $boosttype $boostweakcount $boosttrimweight $boostmaxdepth $boostusesurrogates $feature
-														mv -f configs/basic.cfg configs/basic.$feature.cfg
+														mv -f configs/basic.cfg configs/basic.$feature.$classifier.cfg
 
 														sleep 5
-														echo "nohup ./train -c tester.out config/basic.$feature.cfg >>	$MACHINENAME.$feature.txt"
-														nohup ./train -c tester.out configs/basic.$feature.cfg >>	$MACHINENAME.$feature.txt
+														echo "nohup ./train -c $classifier.$feature.trees config/basic.$feature.$classifier.cfg >>	$MACHINENAME.$feature.txt"
+														nohup ./train -c $classifier.$feature.tree configs/basic.$feature.$classifier.cfg >>	$MACHINENAME.$feature.txt
 														#nohup echo "monkey" >> $MACHINENAME.$feature.txt
 														let COUNTER=COUNTER+1
-														rm -f configs/basic.$feature.cfg
+														rm -f configs/basic.$feature.$classifier.cfg
 												done
 										done
 								done

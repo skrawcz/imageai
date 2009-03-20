@@ -8,11 +8,16 @@
 #include <vector> 
 #include <string> 
 
-
+/*
+ * This reads in a confing file and stores the contents in and array for
+ * later retrieval by the programs.
+ *
+ *
+ */
 class CfgReader {
 
 public:
-	
+	//static method calls so it can be called from anywhere
 	static	int						strToInt(const std::string &in);
 	static	double				strToDouble(const std::string &in);
 
@@ -33,8 +38,6 @@ private:
 
 	// make sure to only read cfg once.
 	static bool cfgRead;
-
-
 
 };
 
