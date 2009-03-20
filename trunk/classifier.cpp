@@ -157,9 +157,9 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			double threshold[5];
       threshold[Features::MUG] = CfgReader::getDouble("isObjectThreshold");
       threshold[Features::CLOCK] = threshold[Features::MUG];
-      threshold[Features::SCISSORS] = threshold[Features::MUG];
-      threshold[Features::STAPLER] = threshold[Features::MUG];
-      threshold[Features::KEYBOARD] = threshold[Features::MUG];
+      threshold[Features::SCISSORS] = threshold[Features::MUG] + 1.5;
+      threshold[Features::STAPLER] = threshold[Features::MUG] + 0.2;
+      threshold[Features::KEYBOARD] = threshold[Features::MUG] - 0.2;
 
 
 
@@ -247,10 +247,10 @@ bool CClassifier::run(const IplImage *frame, CObjectList *objects)
 			cvReleaseImage(&IntegralImageSquare);
 
 			
-			//CObject::boostScores(*objects, previousObjects, dx, dy);
-			//CObject::copyOverwrite(*objects, previousObjects);
-			//CObject::filterOverlap(*objects);
-			CObject::stefansOverlap(*objects,1);
+			CObject::boostScores(*objects, previousObjects, dx, dy);
+			CObject::copyOverwrite(*objects, previousObjects);
+			CObject::filterOverlap(*objects);
+			//CObject::stefansOverlap(*objects,3);
 
 
 			// save values
