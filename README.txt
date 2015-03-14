@@ -1,6 +1,6 @@
-Eric Liaw liaw@stanford.edu 005536922
-Stefan Krawczyk stefank@stanford.edu
-Filip Gruvsatd Gruvstad@stanford.edu 005570639
+Eric Liaw 
+Stefan Krawczyk 
+Filip Gruvsatd 
 
 to train:
 ./train -c <treefile.xml>
